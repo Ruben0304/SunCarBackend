@@ -3,8 +3,10 @@ from bson import ObjectId
 from pydantic import ValidationError
 from pymongo.errors import PyMongoError
 import logging
+
+from domain.entities.producto import CatalogoProductos
 from infrastucture.database.mongo_db.connection import get_collection
-from domain.entities.producto import CatalogoProductos, Marca
+
 
 logger = logging.getLogger(__name__)
 

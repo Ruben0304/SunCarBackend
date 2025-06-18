@@ -6,7 +6,7 @@ import logging
 
 from domain.entities.trabajador import Trabajador
 from infrastucture.database.mongo_db.connection import get_collection
-from domain.entities.producto import CatalogoProductos, Marca
+
 
 logger = logging.getLogger(__name__)
 
