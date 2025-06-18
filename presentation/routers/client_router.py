@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends
 
 from application.services.product_service import ProductService
 from application.services.worker_service import WorkerService
-from domain.entities.producto import CatalogoProductos
+from domain.entities.producto import CatalogoProductos, Material
 from domain.entities.trabajador import Trabajador
 from infrastucture.dependencies import get_product_service, get_worker_service
 
@@ -36,6 +36,21 @@ async def read_categories(
     try:
         categories = await product_service.get_unique_categories()
         return categories
+    except Exception as e:
+        raise HTTPException()
+
+
+@router.get("/categorias/{categoria}/materiales", response_model=List[Material])
+async def read_materials_by_category(
+        categoria: str,
+        product_service: ProductService = Depends(get_product_service)
+):
+    """
+    Endpoint para obtener todos los materiales únicos de una categoría específica.
+    """
+    try:
+        materials = await product_service.get_materials_by_category(categoria)
+        return materials
     except Exception as e:
         raise HTTPException()
 

@@ -1,10 +1,9 @@
 from typing import List
-
 from fastapi import Depends
 
 
 from infrastucture.repositories.productos_repository import ProductRepository
-from domain.entities.producto import CatalogoProductos
+from domain.entities.producto import CatalogoProductos, Material
 
 class ProductService:
     def __init__(self, productos_repository: ProductRepository):
@@ -21,4 +20,10 @@ class ProductService:
         Obtiene todas las categorías únicas de productos.
         """
         return await self.productos_repository.get_unique_categories()
+
+    async def get_materials_by_category(self, categoria: str) -> List[Material]:
+        """
+        Obtiene todos los materiales únicos de una categoría específica.
+        """
+        return await self.productos_repository.get_materials_by_category(categoria)
 
