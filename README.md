@@ -4,30 +4,45 @@ Este proyecto está organizado usando **Clean Architecture**, lo que significa q
 
 Aquí tenés una vista rápida de cómo está organizado todo:
 
-project/
-│
-├── 🧠 domain/                # Reglas de negocio puras
-│   └── 📦 entities/          # Modelos del dominio (ej: Producto, Trabajador)
-│
-├── 📋 application/           # Lógica de aplicación / Casos de uso
-│   └── 🔧 services/          # Servicios que coordinan entidades y lógica
-│
-├── 🏗️ infrastructure/        # Parte técnica (DB, adaptadores)
-│   ├── 📁 repositories/      # Implementaciones reales para acceder a datos
-│   ├── 🛢️ database/
-│   │   └── 🍃 mongodb/       # Configuración y conexión a MongoDB
-│   └── 🧩 dependencies.py    # Inyección de dependencias (repos, servicios, etc.)
-│
-├── 🌐 presentation/          # Capa HTTP (lo que ve el mundo exterior)
-│   └── 🚏 routers/
-│       ├── 👤 admin.py       # Endpoints para admins
-│       ├── 🧑‍🤝‍🧑 client.py      # Endpoints para clientes
-│       └── 🔁 shared.py      # Endpoints compartidos por ambos
-│
-├── 🧪 test/                  # Tests automatizados
-└── 🚀 main.py                # Punto de entrada principal de la aplicación
 
----
+# 📁 Project Structure
+
+```
+project/
+├── 🧠 domain/                    # Reglas de negocio puras
+│   └── 📦 entities/              # Modelos del dominio (ej: Producto, Trabajador)
+├── 📋 application/               # Lógica de aplicación / Casos de uso
+│   └── 🔧 services/              # Servicios que coordinan entidades y lógica
+├── 🏗️ infrastructure/           # Parte técnica (DB, adaptadores)
+│   ├── 📁 repositories/          # Implementaciones reales para acceder a datos
+│   ├── 🛢️ database/
+│   │   └── 🍃 mongodb/          # Configuración y conexión a MongoDB
+│   └── 🧩 dependencies.py       # Inyección de dependencias (repos, servicios, etc.)
+├── 🌐 presentation/              # Capa HTTP (lo que ve el mundo exterior)
+│   └── 🚏 routers/
+│       ├── 👤 admin.py          # Endpoints para admins
+│       ├── 🧑‍🤝‍🧑 client.py        # Endpoints para clientes
+│       └── 🔁 shared.py         # Endpoints compartidos por ambos
+├── 🧪 test/                     # Tests automatizados
+└── 🚀 main.py                   # Punto de entrada principal de la aplicación
+```
+
+## 📖 Descripción de las capas
+
+### 🧠 Domain
+Contiene las reglas de negocio puras y los modelos del dominio. Esta capa no depende de ninguna otra.
+
+### 📋 Application  
+Implementa los casos de uso y la lógica de aplicación que coordina las entidades del dominio.
+
+### 🏗️ Infrastructure
+Maneja todos los aspectos técnicos como bases de datos, repositorios y configuraciones externas.
+
+### 🌐 Presentation
+Expone la API REST con endpoints organizados por tipo de usuario y funcionalidades compartidas.
+
+### 🧪 Test
+Contiene todas las pruebas automatizadas del proyecto.
 
 ### 🌀 ¿Cómo se conecta todo esto?
 
