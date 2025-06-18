@@ -2,7 +2,7 @@ from typing import List
 
 from fastapi import Depends
 
-from infrastucture.dependencies import get_productos_repository
+
 from infrastucture.repositories.productos_repository import ProductRepository
 from domain.entities.producto import CatalogoProductos
 
@@ -16,11 +16,9 @@ class ProductService:
         """
         return await self.productos_repository.get_all_products()
 
-# Función para obtener la instancia del servicio (dependency injection para FastAPI)
-def get_product_service(
-        productos_repository: ProductRepository = Depends(get_productos_repository)
-) -> ProductService:
-    """
-    Dependency para FastAPI que devuelve la instancia del ProductService.
-    """
-    return ProductService(productos_repository)
+    async def get_unique_categories(self) -> List[str]:
+        """
+        Obtiene todas las categorías únicas de productos.
+        """
+        return await self.productos_repository.get_unique_categories()
+

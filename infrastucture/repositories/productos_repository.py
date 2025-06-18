@@ -38,4 +38,29 @@ class ProductRepository:
             logger.error(f"❌ Error: {e}")
             raise Exception(f"Error: {str(e)}")
 
+    async def get_unique_categories(self) -> List[str]:
+        """
+        Obtiene todas las categorías únicas de productos.
+        """
+        try:
+            collection = await get_collection(self.collection_name)
+            
+            # Usar agregación para obtener categorías únicas
+            pipeline = [
+                {"$group": {"_id": "$categoria"}},
+                {"$sort": {"_id": 1}}  # Ordenar alfabéticamente
+            ]
+            
+            cursor = collection.aggregate(pipeline)
+            categorias_raw = await cursor.to_list(length=None)
+            
+            # Extraer solo los nombres de las categorías
+            categorias = [doc["_id"] for doc in categorias_raw]
+            
+            return categorias
+
+        except Exception as e:
+            logger.error(f"❌ Error obteniendo categorías: {e}")
+            raise Exception(f"Error obteniendo categorías: {str(e)}")
+
 

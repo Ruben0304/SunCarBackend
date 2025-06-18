@@ -3,18 +3,13 @@ from typing import List
 
 from fastapi import APIRouter, Depends
 
-
-from application.services.product_service import get_product_service
-from application.services.worker_service import WorkerService, get_worker_service
+from application.services.product_service import ProductService
+from application.services.worker_service import WorkerService
 from domain.entities.producto import CatalogoProductos
 from domain.entities.trabajador import Trabajador
+from infrastucture.dependencies import get_product_service, get_worker_service
 
 router = APIRouter()
-
-
-class ProductService:
-    async def get_all_products(self):
-        pass
 
 
 @router.get("/productos_por_tipo_y_marca", response_model=List[CatalogoProductos])
@@ -27,6 +22,20 @@ async def read_products(
     try:
         products = await product_service.get_all_products()
         return products
+    except Exception as e:
+        raise HTTPException()
+
+
+@router.get("/categorias", response_model=List[str])
+async def read_categories(
+        product_service: ProductService = Depends(get_product_service)
+):
+    """
+    Endpoint para obtener una lista de todas las categorías únicas de productos.
+    """
+    try:
+        categories = await product_service.get_unique_categories()
+        return categories
     except Exception as e:
         raise HTTPException()
 
