@@ -15,10 +15,10 @@ class Location(BaseModel):
 class Form(BaseModel):
     id: str = None
     service_type: str
-    # brigade_chief: Trabajador
-    # brigade_members: List[Trabajador]
-    # work_date_ini: datetime
-    # work_date_fin: datetime
-    # materials: List[Material]
-    # location: Location
-    # photos: List[str]
+    brigade_chief: Trabajador
+    brigade_members: List[Trabajador]
+    work_date_ini: datetime
+    work_date_fin: datetime
+    materials: List[Material]
+    location: Location
+    photos: List[str]
