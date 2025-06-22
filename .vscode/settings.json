@@ -1,1 +1,11 @@
-{}
+{
+    "editor.fontSize": 14,
+    "files.exclude": {
+        "__pycache__": true,
+        ".idea": true,
+        ".venv": true,
+        ".vscode": true,
+        "**/__init__.py": true,
+        "**/__pycache__": true
+    }
+}

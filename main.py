@@ -1,4 +1,6 @@
 from fastapi import FastAPI
+from starlette.middleware.cors import CORSMiddleware
+
 from presentation.routers.client_router import router as appmovil_router
 from presentation.routers.admin_router import router as webadmin_router
 from presentation.routers.shared_router import router as compartidos_router
@@ -14,6 +16,14 @@ app = FastAPI(
 # Cargar variables de entorno del archivo .env
 load_dotenv()
 
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Solo permite este origen
+    allow_credentials=True,  # Permite el envío de credenciales
+    allow_methods=["*"],  # Permite todos los métodos HTTP
+    allow_headers=["*"],  # Permite todos los encabezados
+)
 # Incluir los routers con prefijos para organizar las rutas
 app.include_router(
     appmovil_router,
