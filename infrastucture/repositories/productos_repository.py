@@ -4,7 +4,7 @@ from pydantic import ValidationError
 from pymongo.errors import PyMongoError
 import logging
 
-from domain.entities.producto import CatalogoProductos, Material
+from domain.entities.producto import CatalogoProductos, Material, Cataegoria
 from infrastucture.database.mongo_db.connection import get_collection
 
 logger = logging.getLogger(__name__)
@@ -38,24 +38,27 @@ class ProductRepository:
             logger.error(f"❌ Error: {e}")
             raise Exception(f"Error: {str(e)}")
 
-    def get_unique_categories(self) -> List[str]:
+    def get_unique_categories(self) -> List[Cataegoria]:
         """
         Obtiene todas las categorías únicas de productos.
         """
         try:
             collection = get_collection(self.collection_name)
 
-            # Usar agregación para obtener categorías únicas
-            pipeline = [
-                {"$group": {"_id": "$categoria"}},
-                {"$sort": {"_id": 1}}  # Ordenar alfabéticamente
-            ]
-
-            cursor = collection.aggregate(pipeline)
+            # Obtener solo los campos _id y categoria, excluyendo materiales
+            cursor = collection.find({}, {"_id": 1, "categoria": 1, "materiales": 0})
             categorias_raw = cursor.to_list(length=None)
 
-            # Extraer solo los nombres de las categorías
-            categorias = [doc["_id"] for doc in categorias_raw]
+            # Transformar _id a id (igual que haces con productos)
+            categorias = []
+            for categoria_raw in categorias_raw:
+                # Transformar _id a id
+                categoria_raw["id"] = str(categoria_raw.pop("_id"))
+
+                # Si tienes un modelo Pydantic para categorías, úsalo aquí
+                categoria = Cataegoria.model_validate(categoria_raw)
+                # De lo contrario, simplemente agrega el diccionario transformado
+                categorias.append(categoria)
 
             return categorias
 

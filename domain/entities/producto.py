@@ -12,4 +12,6 @@ class CatalogoProductos(BaseModel):
     categoria: str
     materiales: List[Material]
 
-    
+class Cataegoria(BaseModel):
+    id: str = None
+    categoria: str

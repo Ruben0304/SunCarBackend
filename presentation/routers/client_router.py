@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends
 
 from application.services.product_service import ProductService
 from application.services.worker_service import WorkerService
-from domain.entities.producto import CatalogoProductos, Material
+from domain.entities.producto import CatalogoProductos, Material, Cataegoria
 from domain.entities.trabajador import Trabajador
 from infrastucture.dependencies import get_product_service, get_worker_service
 
@@ -26,7 +26,7 @@ async def read_products(
         raise HTTPException()
 
 
-@router.get("/categorias", response_model=List[str])
+@router.get("/categorias", response_model=List[Cataegoria])
 async def read_categories(
         product_service: ProductService = Depends(get_product_service)
 ):
