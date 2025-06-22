@@ -14,11 +14,11 @@ class FormRepository:
     def __init__(self):
         self.collection_name = "forms"
 
-    async def get_all_forms(self) -> List[Form]:
+    def get_all_forms(self) -> List[Form]:
         try:
-            collection = await get_collection(self.collection_name)
+            collection = get_collection(self.collection_name)
             cursor = collection.find({})
-            formularios_raw = await cursor.to_list(length=None)
+            formularios_raw = cursor.to_list(length=None)
 
             formularios = []
             for formulario_raw in formularios_raw:
@@ -38,14 +38,14 @@ class FormRepository:
             logger.error(f"❌ Error: {e}")
             raise Exception(f"Error: {str(e)}")
 
-    async def get_forms_by_service_type(self, service_type: str) -> List[Form]:
+    def get_forms_by_service_type(self, service_type: str) -> List[Form]:
         """
         Obtiene todos los formularios de un tipo de servicio específico.
         """
         try:
-            collection = await get_collection(self.collection_name)
+            collection = get_collection(self.collection_name)
             cursor = collection.find({"service_type": service_type})
-            formularios_raw = await cursor.to_list(length=None)
+            formularios_raw = cursor.to_list(length=None)
 
             formularios = []
             for formulario_raw in formularios_raw:
@@ -65,14 +65,14 @@ class FormRepository:
             logger.error(f"❌ Error obteniendo formularios por tipo de servicio: {e}")
             raise Exception(f"Error obteniendo formularios por tipo de servicio: {str(e)}")
 
-    async def get_forms_by_brigade_chief(self, brigade_chief: str) -> List[Form]:
+    def get_forms_by_brigade_chief(self, brigade_chief: str) -> List[Form]:
         """
         Obtiene todos los formularios de un jefe de brigada específico.
         """
         try:
-            collection = await get_collection(self.collection_name)
+            collection = get_collection(self.collection_name)
             cursor = collection.find({"brigade_chief": brigade_chief})
-            formularios_raw = await cursor.to_list(length=None)
+            formularios_raw = cursor.to_list(length=None)
 
             formularios = []
             for formulario_raw in formularios_raw:

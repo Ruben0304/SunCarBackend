@@ -13,17 +13,17 @@ class ProductService:
         """
         Obtiene todos los productos del catálogo.
         """
-        return await self.productos_repository.get_all_products()
+        return  self.productos_repository.get_all_products()
 
     async def get_unique_categories(self) -> List[str]:
         """
         Obtiene todas las categorías únicas de productos.
         """
-        return await self.productos_repository.get_unique_categories()
+        return  self.productos_repository.get_unique_categories()
 
     async def get_materials_by_category(self, categoria: str) -> List[Material]:
         """
         Obtiene todos los materiales únicos de una categoría específica.
         """
-        return await self.productos_repository.get_materials_by_category(categoria)
+        return  self.productos_repository.get_materials_by_category(categoria)
 

@@ -14,5 +14,5 @@ class WorkerService:
         """
         Obtains all workers.
         """
-        return await self.worker_repo.get_all_workers()
+        return self.worker_repo.get_all_workers()
 
