@@ -46,7 +46,7 @@ class ProductRepository:
             collection = get_collection(self.collection_name)
 
             # Obtener solo los campos _id y categoria, excluyendo materiales
-            cursor = collection.find({}, {"_id": 1, "categoria": 1, "materiales": 0})
+            cursor = collection.find({}, {"_id": 1, "categoria": 1})
             categorias_raw = cursor.to_list(length=None)
 
             # Transformar _id a id (igual que haces con productos)
@@ -70,38 +70,25 @@ class ProductRepository:
         """
         Obtiene todos los materiales de una categoría específica.
         """
+
         try:
             collection = get_collection(self.collection_name)
+            categoria_object_id = ObjectId(categoria)
+
 
             # Buscar productos de la categoría específica
-            cursor = collection.find({"categoria": categoria})
+            cursor = collection.find({"_id": categoria_object_id}, {"_id": 0,"categoria": 0})
             productos_raw = cursor.to_list(length=None)
+            materials = []
 
-            materiales = []
-            materiales_vistos = set()  # Para evitar duplicados
 
-            for producto_raw in productos_raw:
-                # Usar model_validate para validar el producto
-                producto_raw_copy = producto_raw.copy()
-                producto_raw_copy["id"] = str(producto_raw_copy.pop("_id"))
-                producto = CatalogoProductos.model_validate(producto_raw_copy)
+            for producto in productos_raw[0]["materiales"]:
+               producto["codigo"] = str(producto["codigo"])
+               material = Material.model_validate(producto)
+               materials.append(material)
 
-                # Agregar materiales únicos
-                for material in producto.materiales:
-                    # Crear una clave única para identificar materiales duplicados
-                    material_key = (material.codigo, material.descripcion, material.um)
-                    if material_key not in materiales_vistos:
-                        materiales.append(material)
-                        materiales_vistos.add(material_key)
+            return materials
 
-            # Ordenar por código de material
-            materiales.sort(key=lambda x: x.codigo)
-
-            return materiales
-
-        except ValidationError as e:
-            logger.error(f"❌ Error de validación: {e}")
-            raise Exception(f"Error de validación: {str(e)}")
         except Exception as e:
-            logger.error(f"❌ Error obteniendo materiales por categoría: {e}")
-            raise Exception(f"Error obteniendo materiales por categoría: {str(e)}")
+           logger.error(f"❌ Error obteniendo materiales por categoría: {e}")
+           raise Exception(f"Error obteniendo materiales por categoría: {str(e)}")

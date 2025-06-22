@@ -10,7 +10,7 @@ Accept: application/json
 
 ###
 
-GET http://127.0.0.1:8000/api/categorias/INVERSORES/materiales
+GET http://127.0.0.1:8000/api/categorias/68533cc00eb2af9902428617/materiales
 Accept: application/json
 
 ###

@@ -2,7 +2,7 @@ from pydantic import BaseModel
 from typing import List
 
 class Material(BaseModel):
-    codigo: int
+    codigo: str
     descripcion: str
     um: str
 
