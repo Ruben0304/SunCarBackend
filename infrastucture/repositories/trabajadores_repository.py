@@ -37,3 +37,41 @@ class WorkerRepository:
         except Exception as e:
             logger.error(f"❌ Error: {e}")
             raise Exception(f"Error: {str(e)}")
+
+    def login(self, ci: str, contraseña: str) -> bool:
+        """
+        Autentica un trabajador usando su CI y contraseña.
+        
+        Args:
+            ci: Cédula de identidad del trabajador
+            contraseña: Contraseña del trabajador
+            
+        Returns:
+            bool: True si las credenciales son correctas, False en caso contrario
+        """
+        try:
+            collection = get_collection(self.collection_name)
+            
+            # Buscar el trabajador por CI
+            worker_raw = collection.find_one({"CI": ci})
+            
+            if worker_raw is None:
+                logger.warning(f"⚠️ Trabajador con CI {ci} no encontrado")
+                return False
+            
+            # Verificar si el trabajador tiene contraseña
+            if "contraseña" not in worker_raw:
+                logger.warning(f"⚠️ Trabajador con CI {ci} no tiene contraseña configurada")
+                return False
+            
+            # Verificar si la contraseña coincide
+            if worker_raw["contraseña"] == contraseña:
+                logger.info(f"✅ Login exitoso para trabajador con CI {ci}")
+                return True
+            else:
+                logger.warning(f"⚠️ Contraseña incorrecta para trabajador con CI {ci}")
+                return False
+                
+        except Exception as e:
+            logger.error(f"❌ Error durante el login: {e}")
+            raise Exception(f"Error durante el login: {str(e)}")

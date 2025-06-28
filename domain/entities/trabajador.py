@@ -1,7 +1,10 @@
 from pydantic import BaseModel
+from typing import Optional
 
 
 class Trabajador(BaseModel):
-    id: str = None  # Se mapea desde _id de MongoDB
     CI: str
     nombre: str
+    contraseña: Optional[str] = None
+
+

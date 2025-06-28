@@ -1,15 +1,30 @@
 from http.client import HTTPException
-from typing import List
+from typing import List, Optional
 
 from fastapi import APIRouter, Depends
+from pydantic import BaseModel
 
 from application.services.product_service import ProductService
 from application.services.worker_service import WorkerService
+from application.services.auth_service import AuthService
+from application.singleton.brigada_singleton import BrigadaSingleton
 from domain.entities.producto import CatalogoProductos, Material, Cataegoria
 from domain.entities.trabajador import Trabajador
-from infrastucture.dependencies import get_product_service, get_worker_service
+from domain.entities.brigada import Brigada
+from infrastucture.dependencies import get_product_service, get_worker_service, get_auth_service
 
 router = APIRouter()
+
+
+class LoginRequest(BaseModel):
+    ci: str
+    contraseña: str
+
+
+class LoginResponse(BaseModel):
+    success: bool
+    message: str
+    brigada: Optional[Brigada] = None
 
 
 @router.get("/productos_por_tipo_y_marca", response_model=List[CatalogoProductos])
@@ -67,3 +82,58 @@ async def read_workers(
         return workers
     except Exception as e:
         raise HTTPException()
+
+@router.post("/auth/trabajador", response_model=LoginResponse)
+async def login_trabajador(
+        login_data: LoginRequest,
+        auth_service: AuthService = Depends(get_auth_service)
+):
+    """
+    Endpoint para autenticar un trabajador usando CI y contraseña.
+    Si la autenticación es exitosa, retorna la brigada de la cual es líder.
+    """
+    try:
+        brigada = await auth_service.login_trabajador(login_data.ci, login_data.contraseña)
+        
+        if brigada is not None:
+            # Establecer la brigada en el singleton
+            BrigadaSingleton.set_brigada_activa(brigada)
+            
+            return LoginResponse(
+                success=True,
+                message="Autenticación exitosa",
+                brigada=brigada
+            )
+        else:
+            return LoginResponse(
+                success=False,
+                message="Credenciales incorrectas o trabajador no es líder de brigada",
+                brigada=None
+            )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/auth/brigada-activa", response_model=Optional[Brigada])
+async def get_brigada_activa():
+    """
+    Endpoint para obtener la brigada activa del singleton.
+    Útil para verificar qué brigada está autenticada actualmente.
+    """
+    try:
+        brigada = BrigadaSingleton.get_brigada_activa()
+        return brigada
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/auth/logout")
+async def logout():
+    """
+    Endpoint para hacer logout y limpiar la brigada activa del singleton.
+    """
+    try:
+        BrigadaSingleton.clear_brigada_activa()
+        return {"success": True, "message": "Logout exitoso"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

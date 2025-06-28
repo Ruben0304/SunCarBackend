@@ -3,7 +3,6 @@ from bson import ObjectId
 from pydantic import ValidationError
 from pymongo.errors import PyMongoError
 import logging
-
 from domain.entities.producto import CatalogoProductos, Material, Cataegoria
 from infrastucture.database.mongo_db.connection import get_collection
 
