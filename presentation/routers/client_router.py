@@ -7,7 +7,6 @@ from pydantic import BaseModel
 from application.services.product_service import ProductService
 from application.services.worker_service import WorkerService
 from application.services.auth_service import AuthService
-from application.singleton.brigada_singleton import BrigadaSingleton
 from domain.entities.producto import CatalogoProductos, Material, Cataegoria
 from domain.entities.trabajador import Trabajador
 from domain.entities.brigada import Brigada
@@ -96,8 +95,6 @@ async def login_trabajador(
         brigada = await auth_service.login_trabajador(login_data.ci, login_data.contraseña)
         
         if brigada is not None:
-            # Establecer la brigada en el singleton
-            BrigadaSingleton.set_brigada_activa(brigada)
             
             return LoginResponse(
                 success=True,
@@ -114,26 +111,3 @@ async def login_trabajador(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/auth/brigada-activa", response_model=Optional[Brigada])
-async def get_brigada_activa():
-    """
-    Endpoint para obtener la brigada activa del singleton.
-    Útil para verificar qué brigada está autenticada actualmente.
-    """
-    try:
-        brigada = BrigadaSingleton.get_brigada_activa()
-        return brigada
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-@router.post("/auth/logout")
-async def logout():
-    """
-    Endpoint para hacer logout y limpiar la brigada activa del singleton.
-    """
-    try:
-        BrigadaSingleton.clear_brigada_activa()
-        return {"success": True, "message": "Logout exitoso"}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
