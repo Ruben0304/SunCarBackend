@@ -6,6 +6,5 @@ from domain.entities.trabajador import Trabajador
 
 
 class Brigada(BaseModel):
-    lider_ci: str
     lider: Trabajador
     integrantes: List[Trabajador]
