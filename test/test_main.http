@@ -32,3 +32,8 @@ Content-Type: application/json
     "ci": "12345678",
     "contraseña": "12345678*"
 }
+
+###
+
+GET http://127.0.0.1:8000/api/brigadas
+Accept: application/json

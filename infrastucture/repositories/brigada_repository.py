@@ -174,3 +174,55 @@ class BrigadaRepository:
         except Exception as e:
             logger.error(f"❌ Error obteniendo brigadas por integrante: {e}")
             raise Exception(f"Error obteniendo brigadas por integrante: {str(e)}")
+
+    def create_brigada(self, lider_ci: str, integrantes_ci: List[str]) -> str:
+        """
+        Crea una nueva brigada en la colección base (no la view).
+        Retorna el id de la brigada creada.
+        """
+        collection = get_collection("brigada")
+        result = collection.insert_one({
+            "lider": lider_ci,
+            "integrantes": integrantes_ci
+        })
+        return str(result.inserted_id)
+
+    def update_brigada(self, brigada_id: str, lider_ci: str, integrantes_ci: List[str]) -> bool:
+        """
+        Actualiza una brigada existente en la colección base.
+        """
+        collection = get_collection("brigada")
+        result = collection.update_one({"_id": ObjectId(brigada_id)}, {"$set": {"lider": lider_ci, "integrantes": integrantes_ci}})
+        return result.modified_count > 0
+
+    def delete_brigada(self, brigada_id: str) -> bool:
+        """
+        Elimina una brigada por su id en la colección base.
+        """
+        collection = get_collection("brigada")
+        result = collection.delete_one({"_id": ObjectId(brigada_id)})
+        return result.deleted_count > 0
+
+    def add_trabajador(self, brigada_id: str, trabajador_ci: str) -> bool:
+        """
+        Agrega un trabajador a la lista de integrantes de una brigada.
+        """
+        collection = get_collection("brigada")
+        result = collection.update_one({"_id": ObjectId(brigada_id)}, {"$addToSet": {"integrantes": trabajador_ci}})
+        return result.modified_count > 0
+
+    def remove_trabajador(self, brigada_id: str, trabajador_ci: str) -> bool:
+        """
+        Elimina un trabajador de la lista de integrantes de una brigada.
+        """
+        collection = get_collection("brigada")
+        result = collection.update_one({"_id": ObjectId(brigada_id)}, {"$pull": {"integrantes": trabajador_ci}})
+        return result.modified_count > 0
+
+    def update_trabajador(self, trabajador_ci: str, nombre: str) -> bool:
+        """
+        Actualiza los datos de un trabajador (solo nombre por simplicidad).
+        """
+        collection = get_collection("trabajadores")
+        result = collection.update_one({"CI": trabajador_ci}, {"$set": {"nombre": nombre}})
+        return result.modified_count > 0
