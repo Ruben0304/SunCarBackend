@@ -42,10 +42,10 @@ class BrigadaRequest(BaseModel):
 class MaterialRequest(BaseModel):
     """Datos de materiales para el request"""
     tipo: str = Field(..., min_length=1, max_length=50, description="Tipo de material")
-    nombre: str = Field(..., min_length=1, max_length=100, description="Nombre del material")
+    nombre: str = Field(..., min_length=1, description="Nombre del material")
     cantidad: str = Field(..., min_length=1, description="Cantidad del material")
     unidad_medida: str = Field(..., min_length=1, max_length=20, description="Unidad de medida")
-    codigo_producto: str = Field(..., min_length=1, max_length=50, description="Código del producto")
+    codigo_producto: str = Field(..., min_length=1, description="Código del producto")
 
     @validator('cantidad')
     def validate_cantidad(cls, v):
