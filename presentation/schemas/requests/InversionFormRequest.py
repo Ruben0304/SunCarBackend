@@ -5,7 +5,7 @@ import re
 
 class TeamMember(BaseModel):
     """Modelo para miembro del equipo"""
-    nombre: str = Field(..., min_length=1, max_length=100, description="Nombre del miembro del equipo")
+    nombre: str = Field(..., min_length=1, description="Nombre del miembro del equipo")
     CI: str = Field(..., min_length=1, max_length=20, description="Cédula de identidad")
     
     @validator('nombre')

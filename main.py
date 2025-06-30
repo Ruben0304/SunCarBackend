@@ -10,6 +10,7 @@ from presentation.routers.shared_router import router as compartidos_router
 from presentation.routers.reportes_router import router as reportes_router
 
 from dotenv import load_dotenv
+from presentation.handlers.validation_exception_handler import validation_exception_handler
 
 app = FastAPI(
     title="SunCar Backend",
@@ -20,28 +21,7 @@ app = FastAPI(
 # Cargar variables de entorno del archivo .env
 load_dotenv()
 
-
-@app.exception_handler(RequestValidationError)
-async def validation_exception_handler(request: Request, exc: RequestValidationError):
-    # Construir un mensaje detallado
-    errors = []
-    for err in exc.errors():
-        loc = " -> ".join(str(l) for l in err['loc'])
-        msg = err['msg']
-        value = err.get('ctx', {}).get('limit_value', None)
-        errors.append({
-            "field": loc,
-            "error": msg,
-            "value": err.get('input', None)  # input es el valor recibido (FastAPI 0.100+)
-        })
-    return JSONResponse(
-        status_code=HTTP_422_UNPROCESSABLE_ENTITY,
-        content={
-            "success": False,
-            "message": "Error de validación en los datos enviados",
-            "errors": errors
-        }
-    )
+app.add_exception_handler(RequestValidationError, validation_exception_handler)
 
 app.add_middleware(
     CORSMiddleware,
