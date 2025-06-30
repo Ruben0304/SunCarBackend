@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 
 class FormRepository:
     def __init__(self):
-        self.collection_name = "forms"
+        self.collection_name = "reportes"
 
     def get_all_forms(self) -> List[Form]:
         try:
