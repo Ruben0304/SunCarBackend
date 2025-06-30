@@ -1,8 +1,8 @@
 from http.client import HTTPException
 from typing import List, Optional
 
-from fastapi import APIRouter, Depends, status
-from pydantic import BaseModel, Field
+from fastapi import APIRouter, Depends, status, HTTPException
+from pydantic import BaseModel, Field, ValidationError
 
 from presentation.schemas.requests.InversionFormRequest import InversionRequest
 
@@ -13,7 +13,7 @@ class InversionReportResponse(BaseModel):
     """Respuesta del endpoint de reporte de inversión"""
     success: bool = Field(..., description="Indica si la operación fue exitosa")
     message: str = Field(..., description="Mensaje descriptivo del resultado")
-    data: dict = Field(..., description="Datos del reporte recibido")
+    data: Optional[dict] = Field(default=None, description="Datos del reporte recibido")
     
     class Config:
         json_schema_extra = {
@@ -118,8 +118,24 @@ async def create_inversion_report(
             message="Reporte de inversión recibido correctamente y validado",
             data=report_data.dict()
         )
+    except ValidationError as e:
+        # Capturar errores de validación de Pydantic
+        error_messages = []
+        for error in e.errors():
+            field_path = " -> ".join(str(loc) for loc in error['loc'])
+            error_msg = f"{field_path}: {error['msg']}"
+            error_messages.append(error_msg)
+        
+        error_summary = "; ".join(error_messages)
+        
+        return InversionReportResponse(
+            success=False,
+            message=f"Errores de validación detectados: {error_summary}",
+            data={}
+        )
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, 
-            detail=f"Error interno del servidor: {str(e)}"
+        return InversionReportResponse(
+            success=False,
+            message=f"Error interno del servidor: {str(e)}",
+            data={}
         ) 

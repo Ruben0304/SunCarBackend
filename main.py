@@ -1,5 +1,8 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from fastapi.exceptions import RequestValidationError
 from starlette.middleware.cors import CORSMiddleware
+from starlette.responses import JSONResponse
+from starlette.status import HTTP_422_UNPROCESSABLE_ENTITY
 
 from presentation.routers.client_router import router as appmovil_router
 from presentation.routers.admin_router import router as webadmin_router
@@ -17,6 +20,28 @@ app = FastAPI(
 # Cargar variables de entorno del archivo .env
 load_dotenv()
 
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    # Construir un mensaje detallado
+    errors = []
+    for err in exc.errors():
+        loc = " -> ".join(str(l) for l in err['loc'])
+        msg = err['msg']
+        value = err.get('ctx', {}).get('limit_value', None)
+        errors.append({
+            "field": loc,
+            "error": msg,
+            "value": err.get('input', None)  # input es el valor recibido (FastAPI 0.100+)
+        })
+    return JSONResponse(
+        status_code=HTTP_422_UNPROCESSABLE_ENTITY,
+        content={
+            "success": False,
+            "message": "Error de validación en los datos enviados",
+            "errors": errors
+        }
+    )
 
 app.add_middleware(
     CORSMiddleware,
