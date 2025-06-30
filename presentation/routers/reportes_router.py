@@ -5,8 +5,12 @@ from fastapi import APIRouter, Depends, status, HTTPException
 from pydantic import BaseModel, Field, ValidationError
 
 from presentation.schemas.requests.InversionFormRequest import InversionRequest
+from application.services.form_service import FormService
+from infrastucture.repositories.formularios_repository import FormRepository
 
 router = APIRouter()
+
+form_service = FormService(FormRepository())
 
 
 class InversionReportResponse(BaseModel):
@@ -110,12 +114,11 @@ async def create_inversion_report(
     - Debe incluir al menos una foto de inicio y fin
     """
     try:
-        # Por el momento no hace nada, solo recibe el request
-        # TODO: Implementar lógica de procesamiento del reporte
-        
+        # Guardar en la base de datos
+        form_id = form_service.save_form(report_data.dict())
         return InversionReportResponse(
             success=True,
-            message="Reporte de inversión recibido correctamente y validado",
+            message=f"Reporte de inversión recibido y guardado con id {form_id}",
             data=report_data.dict()
         )
     except ValidationError as e:

@@ -91,3 +91,17 @@ class FormRepository:
         except Exception as e:
             logger.error(f"❌ Error obteniendo formularios por jefe de brigada: {e}")
             raise Exception(f"Error obteniendo formularios por jefe de brigada: {str(e)}")
+
+    def save_form(self, form_data: dict) -> str:
+        """
+        Guarda un formulario en la base de datos.
+        :param form_data: Diccionario con los datos del formulario.
+        :return: ID del formulario insertado.
+        """
+        try:
+            collection = get_collection(self.collection_name)
+            result = collection.insert_one(form_data)
+            return str(result.inserted_id)
+        except Exception as e:
+            logger.error(f"❌ Error guardando formulario: {e}")
+            raise Exception(f"Error guardando formulario: {str(e)}")
