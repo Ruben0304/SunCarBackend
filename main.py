@@ -4,6 +4,7 @@ from starlette.middleware.cors import CORSMiddleware
 from presentation.routers.client_router import router as appmovil_router
 from presentation.routers.admin_router import router as webadmin_router
 from presentation.routers.shared_router import router as compartidos_router
+from presentation.routers.reportes_router import router as reportes_router
 
 from dotenv import load_dotenv
 
@@ -41,6 +42,12 @@ app.include_router(
     compartidos_router,
     prefix="/api",
     tags=["Compartidos"]
+)
+
+app.include_router(
+    reportes_router,
+    prefix="/api/reportes",
+    tags=["Reportes"]
 )
 
 
