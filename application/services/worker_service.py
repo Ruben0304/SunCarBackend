@@ -16,3 +16,12 @@ class WorkerService:
         """
         return self.worker_repo.get_all_workers()
 
+    async def create_worker(self, ci: str, nombre: str, contrasena: str = None) -> str:
+        return self.worker_repo.create_worker(ci, nombre, contrasena)
+
+    async def search_workers_by_name(self, nombre: str) -> list:
+        return self.worker_repo.search_workers_by_name(nombre)
+
+    async def set_worker_password(self, ci: str, contrasena: str) -> bool:
+        return self.worker_repo.set_worker_password(ci, contrasena)
+

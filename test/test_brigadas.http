@@ -1,0 +1,184 @@
+# Test endpoints de Brigadas
+
+### 1. Listar todas las brigadas
+GET http://127.0.0.1:8000/api/brigadas
+Accept: application/json
+
+###
+
+### 2. Buscar brigadas por nombre
+GET http://127.0.0.1:8000/api/brigadas?search=Juan
+Accept: application/json
+
+###
+
+### 3. Crear una nueva brigada
+POST http://127.0.0.1:8000/api/brigadas
+Content-Type: application/json
+
+{
+    "lider": {
+        "nombre": "Carlos Rodríguez",
+        "CI": "11223344"
+    },
+    "integrantes": [
+        {
+            "nombre": "Ana Martínez",
+            "CI": "22334455"
+        },
+        {
+            "nombre": "Luis García",
+            "CI": "33445566"
+        },
+        {
+            "nombre": "María López",
+            "CI": "44556677"
+        }
+    ]
+}
+
+###
+
+### 4. Crear brigada con solo líder (sin integrantes)
+POST http://127.0.0.1:8000/api/brigadas
+Content-Type: application/json
+
+{
+    "lider": {
+        "nombre": "Pedro Sánchez",
+        "CI": "55667788"
+    },
+    "integrantes": []
+}
+
+###
+
+### 5. Obtener brigada específica (usando CI del líder)
+GET http://127.0.0.1:8000/api/brigadas/11223344
+Accept: application/json
+
+###
+
+### 6. Editar brigada existente
+PUT http://127.0.0.1:8000/api/brigadas/BRIGADA_ID_AQUI
+Content-Type: application/json
+
+{
+    "lider": {
+        "nombre": "Carlos Rodríguez Actualizado",
+        "CI": "11223344"
+    },
+    "integrantes": [
+        {
+            "nombre": "Ana Martínez",
+            "CI": "22334455"
+        },
+        {
+            "nombre": "Nuevo Integrante",
+            "CI": "99887766"
+        }
+    ]
+}
+
+###
+
+### 7. Agregar trabajador a brigada
+POST http://127.0.0.1:8000/api/brigadas/BRIGADA_ID_AQUI/trabajadores
+Content-Type: application/json
+
+{
+    "nombre": "Roberto Fernández",
+    "CI": "66778899"
+}
+
+###
+
+### 8. Eliminar trabajador de brigada
+DELETE http://127.0.0.1:8000/api/brigadas/BRIGADA_ID_AQUI/trabajadores/22334455
+
+###
+
+### 9. Editar datos de trabajador
+PUT http://127.0.0.1:8000/api/brigadas/BRIGADA_ID_AQUI/trabajadores/11223344
+Content-Type: application/json
+
+{
+    "nombre": "Carlos Rodríguez Modificado",
+    "CI": "11223344"
+}
+
+###
+
+### 10. Eliminar brigada
+DELETE http://127.0.0.1:8000/api/brigadas/BRIGADA_ID_AQUI
+
+###
+
+### 11. Test con datos de ejemplo del JSON proporcionado
+POST http://127.0.0.1:8000/api/brigadas
+Content-Type: application/json
+
+{
+    "lider": {
+        "nombre": "Juan Pérez",
+        "CI": "12345678"
+    },
+    "integrantes": [
+        {
+            "nombre": "Pedro Sánchez",
+            "CI": "78901234"
+        },
+        {
+            "nombre": "Luis Fernández",
+            "CI": "56789012"
+        },
+        {
+            "nombre": "Laura López",
+            "CI": "67890123"
+        }
+    ]
+}
+
+###
+
+### 12. Test de validación - CI duplicada (debería fallar)
+POST http://127.0.0.1:8000/api/brigadas
+Content-Type: application/json
+
+{
+    "lider": {
+        "nombre": "Test Líder",
+        "CI": "11111111"
+    },
+    "integrantes": [
+        {
+            "nombre": "Integrante 1",
+            "CI": "11111111"
+        },
+        {
+            "nombre": "Integrante 2",
+            "CI": "22222222"
+        }
+    ]
+}
+
+###
+
+### 13. Test de validación - CI vacía (debería fallar)
+POST http://127.0.0.1:8000/api/brigadas
+Content-Type: application/json
+
+{
+    "lider": {
+        "nombre": "Test Líder",
+        "CI": ""
+    },
+    "integrantes": [
+        {
+            "nombre": "Integrante 1",
+            "CI": "33333333"
+        }
+    ]
+}
+
+### 

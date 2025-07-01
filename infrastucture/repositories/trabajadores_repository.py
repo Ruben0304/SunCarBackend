@@ -75,3 +75,27 @@ class WorkerRepository:
         except Exception as e:
             logger.error(f"❌ Error durante el login: {e}")
             raise Exception(f"Error durante el login: {str(e)}")
+
+    def create_worker(self, ci: str, nombre: str, contrasena: str = None) -> str:
+        collection = get_collection(self.collection_name)
+        data = {"CI": ci, "nombre": nombre}
+        if contrasena:
+            data["contraseña"] = contrasena
+        result = collection.insert_one(data)
+        return str(result.inserted_id)
+
+    def search_workers_by_name(self, nombre: str) -> list:
+        collection = get_collection(self.collection_name)
+        cursor = collection.find({"nombre": {"$regex": nombre, "$options": "i"}})
+        workers_raw = cursor.to_list(length=None)
+        workers = []
+        for worker_raw in workers_raw:
+            worker_raw["id"] = str(worker_raw.pop("_id"))
+            worker = Trabajador.model_validate(worker_raw)
+            workers.append(worker)
+        return workers
+
+    def set_worker_password(self, ci: str, contrasena: str) -> bool:
+        collection = get_collection(self.collection_name)
+        result = collection.update_one({"CI": ci}, {"$set": {"contraseña": contrasena}})
+        return result.modified_count > 0
