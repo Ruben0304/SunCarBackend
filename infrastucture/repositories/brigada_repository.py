@@ -180,7 +180,7 @@ class BrigadaRepository:
         Crea una nueva brigada en la colección base (no la view).
         Retorna el id de la brigada creada.
         """
-        collection = get_collection("brigada")
+        collection = get_collection("brigadas")
         result = collection.insert_one({
             "lider": lider_ci,
             "integrantes": integrantes_ci
@@ -191,7 +191,7 @@ class BrigadaRepository:
         """
         Actualiza una brigada existente en la colección base.
         """
-        collection = get_collection("brigada")
+        collection = get_collection("brigadas")
         result = collection.update_one({"_id": ObjectId(brigada_id)}, {"$set": {"lider": lider_ci, "integrantes": integrantes_ci}})
         return result.modified_count > 0
 
@@ -199,7 +199,7 @@ class BrigadaRepository:
         """
         Elimina una brigada por su id en la colección base.
         """
-        collection = get_collection("brigada")
+        collection = get_collection("brigadas")
         result = collection.delete_one({"_id": ObjectId(brigada_id)})
         return result.deleted_count > 0
 
@@ -207,7 +207,7 @@ class BrigadaRepository:
         """
         Agrega un trabajador a la lista de integrantes de una brigada.
         """
-        collection = get_collection("brigada")
+        collection = get_collection("brigadas")
         result = collection.update_one({"_id": ObjectId(brigada_id)}, {"$addToSet": {"integrantes": trabajador_ci}})
         return result.modified_count > 0
 
@@ -215,7 +215,7 @@ class BrigadaRepository:
         """
         Elimina un trabajador de la lista de integrantes de una brigada.
         """
-        collection = get_collection("brigada")
+        collection = get_collection("brigadas")
         result = collection.update_one({"_id": ObjectId(brigada_id)}, {"$pull": {"integrantes": trabajador_ci}})
         return result.modified_count > 0
 

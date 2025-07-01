@@ -24,6 +24,12 @@ class ProductRepository:
                 # Transformar _id a id
                 producto_raw["id"] = str(producto_raw.pop("_id"))
 
+                # Asegurar que todos los materiales tengan 'codigo' como string
+                if "materiales" in producto_raw:
+                    for material in producto_raw["materiales"]:
+                        if "codigo" in material:
+                            material["codigo"] = str(material["codigo"])
+
                 # Usar model_validate (Pydantic v2)
                 producto = CatalogoProductos.model_validate(producto_raw)
                 productos.append(producto)
@@ -91,3 +97,27 @@ class ProductRepository:
         except Exception as e:
            logger.error(f"❌ Error obteniendo materiales por categoría: {e}")
            raise Exception(f"Error obteniendo materiales por categoría: {str(e)}")
+
+    def create_product(self, categoria: str, materiales: Optional[List[dict]] = None) -> str:
+        """
+        Crea un nuevo producto (categoría) con materiales opcionales.
+        """
+        collection = get_collection(self.collection_name)
+        if materiales is None:
+            materiales = []
+        result = collection.insert_one({
+            "categoria": categoria,
+            "materiales": materiales
+        })
+        return str(result.inserted_id)
+
+    def add_material_to_product(self, producto_id: str, material: dict) -> bool:
+        """
+        Agrega un material a un producto existente (por id).
+        """
+        collection = get_collection(self.collection_name)
+        # Asegurar que el código sea string
+        if "codigo" in material:
+            material["codigo"] = str(material["codigo"])
+        result = collection.update_one({"_id": ObjectId(producto_id)}, {"$push": {"materiales": material}})
+        return result.modified_count > 0

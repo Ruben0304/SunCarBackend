@@ -1,7 +1,7 @@
 from http.client import HTTPException
 from typing import List, Optional
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Body, Query
 from pydantic import BaseModel
 
 from application.services.product_service import ProductService
@@ -10,7 +10,8 @@ from application.services.auth_service import AuthService
 from domain.entities.producto import CatalogoProductos, Material, Cataegoria
 from domain.entities.trabajador import Trabajador
 from domain.entities.brigada import Brigada
-from infrastucture.dependencies import get_product_service, get_worker_service, get_auth_service
+from infrastucture.dependencies import get_product_service, get_worker_service, get_auth_service, get_brigada_repository
+from infrastucture.repositories.brigada_repository import BrigadaRepository
 
 router = APIRouter()
 
@@ -107,6 +108,142 @@ async def login_trabajador(
                 message="Credenciales incorrectas o trabajador no es líder de brigada",
                 brigada=None
             )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/productos", response_model=str, status_code=201)
+async def crear_producto(
+    categoria: str = Body(..., embed=True),
+    materiales: Optional[list] = Body(default=None),
+    product_service: ProductService = Depends(get_product_service)
+):
+    """
+    Crear un nuevo producto (categoría) con materiales opcionales.
+    """
+    try:
+        producto_id = await product_service.create_product(categoria, materiales)
+        return producto_id
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/productos/{producto_id}/materiales", response_model=bool)
+async def agregar_material_a_producto(
+    producto_id: str,
+    material: dict = Body(...),
+    product_service: ProductService = Depends(get_product_service)
+):
+    """
+    Agregar un material a un producto existente.
+    """
+    try:
+        ok = await product_service.add_material_to_product(producto_id, material)
+        if not ok:
+            raise HTTPException(status_code=404, detail="Producto no encontrado o sin cambios")
+        return ok
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/categorias", response_model=str, status_code=201)
+async def crear_categoria(
+    categoria: str = Body(..., embed=True),
+    product_service: ProductService = Depends(get_product_service)
+):
+    """
+    Crear una nueva categoría (producto vacío).
+    """
+    try:
+        categoria_id = await product_service.create_category(categoria)
+        return categoria_id
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/trabajadores", response_model=str, status_code=201)
+async def crear_trabajador(
+    ci: str = Body(..., embed=True),
+    nombre: str = Body(..., embed=True),
+    contrasena: str = Body(default=None, embed=True),
+    worker_service: WorkerService = Depends(get_worker_service)
+):
+    """
+    Crear un nuevo trabajador (opcionalmente con contraseña).
+    """
+    try:
+        worker_id = await worker_service.create_worker(ci, nombre, contrasena)
+        return worker_id
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/trabajadores/buscar", response_model=List[Trabajador])
+async def buscar_trabajadores(
+    nombre: str = Query(..., description="Nombre a buscar"),
+    worker_service: WorkerService = Depends(get_worker_service)
+):
+    """
+    Buscar trabajadores por nombre (case-insensitive).
+    """
+    try:
+        return await worker_service.search_workers_by_name(nombre)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/jefes_brigada", response_model=str, status_code=201)
+async def crear_jefe_brigada(
+    ci: str = Body(..., embed=True),
+    nombre: str = Body(..., embed=True),
+    contrasena: str = Body(..., embed=True),
+    integrantes: list = Body(default=None),
+    brigada_repo: BrigadaRepository = Depends(get_brigada_repository),
+    worker_service: WorkerService = Depends(get_worker_service)
+):
+    """
+    Crear un jefe de brigada (trabajador con contraseña) y asignar brigada (con o sin integrantes).
+    """
+    try:
+        # Crear trabajador con contraseña
+        await worker_service.create_worker(ci, nombre, contrasena)
+        integrantes_ci = [i["CI"] for i in integrantes] if integrantes else []
+        brigada_id = brigada_repo.create_brigada(ci, integrantes_ci)
+        return brigada_id
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/trabajadores/{ci}/convertir_jefe", response_model=bool)
+async def convertir_trabajador_a_jefe(
+    ci: str,
+    contrasena: str = Body(..., embed=True),
+    integrantes: list = Body(default=None),
+    brigada_repo: BrigadaRepository = Depends(get_brigada_repository),
+    worker_service: WorkerService = Depends(get_worker_service)
+):
+    """
+    Convertir un trabajador existente en jefe de brigada (asignar contraseña y crear brigada donde sea líder).
+    """
+    try:
+        ok = await worker_service.set_worker_password(ci, contrasena)
+        integrantes_ci = [i["CI"] for i in integrantes] if integrantes else []
+        brigada_repo.create_brigada(ci, integrantes_ci)
+        return ok
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/trabajadores/asignar_brigada", response_model=bool, status_code=201)
+async def crear_trabajador_y_asignar_brigada(
+    ci: str = Body(..., embed=True),
+    nombre: str = Body(..., embed=True),
+    brigada_id: str = Body(..., embed=True),
+    contrasena: str = Body(default=None, embed=True),
+    worker_service: WorkerService = Depends(get_worker_service),
+    brigada_repo: BrigadaRepository = Depends(get_brigada_repository)
+):
+    """
+    Crear un trabajador y asignarlo a una brigada existente en un solo paso.
+    """
+    try:
+        # Crear trabajador
+        await worker_service.create_worker(ci, nombre, contrasena)
+        # Asignar a brigada
+        ok = brigada_repo.add_trabajador(brigada_id, ci)
+        return ok
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
