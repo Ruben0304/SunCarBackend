@@ -1,12 +1,15 @@
 from http.client import HTTPException
 from typing import List, Optional
 
-from fastapi import APIRouter, Depends, status, HTTPException
+from fastapi import APIRouter, Depends, status, HTTPException, File, UploadFile, Form
 from pydantic import BaseModel, Field, ValidationError
 
 from presentation.schemas.requests.InversionFormRequest import InversionRequest
 from application.services.form_service import FormService
 from infrastucture.repositories.formularios_repository import FormRepository
+from infrastucture.external_services.base64_file_converter import FileBase64Converter
+import base64
+import json
 
 router = APIRouter()
 
@@ -87,7 +90,13 @@ class InversionReportResponse(BaseModel):
     tags=["Reportes de Inversión"]
 )
 async def create_inversion_report(
-        report_data: InversionRequest
+    tipo_reporte: str = Form(...),
+    brigada: str = Form(...),
+    materiales: str = Form(...),
+    ubicacion: str = Form(...),
+    fecha_hora: str = Form(...),
+    fotos_inicio: list[UploadFile] = File(...),
+    fotos_fin: list[UploadFile] = File(...)
 ):
     """
     Crea un nuevo reporte de inversión en el sistema.
@@ -114,23 +123,43 @@ async def create_inversion_report(
     - Debe incluir al menos una foto de inicio y fin
     """
     try:
-        # Guardar en la base de datos
-        form_id = form_service.save_form(report_data.dict())
+        # Parsear los campos JSON
+        brigada_dict = json.loads(brigada)
+        materiales_list = json.loads(materiales)
+        ubicacion_dict = json.loads(ubicacion)
+        fecha_hora_dict = json.loads(fecha_hora)
+
+        fotos_inicio_base64 = await FileBase64Converter.files_to_base64(fotos_inicio)
+        fotos_fin_base64 = await FileBase64Converter.files_to_base64(fotos_fin)
+
+        adjuntos = {
+            "fotos_inicio": fotos_inicio_base64,
+            "fotos_fin": fotos_fin_base64
+        }
+
+        request_data = {
+            "tipo_reporte": tipo_reporte,
+            "brigada": brigada_dict,
+            "materiales": materiales_list,
+            "ubicacion": ubicacion_dict,
+            "fecha_hora": fecha_hora_dict,
+            "adjuntos": adjuntos
+        }
+
+        inversion_request = InversionRequest(**request_data)
+        form_id = form_service.save_form(inversion_request.dict())
         return InversionReportResponse(
             success=True,
             message=f"Reporte de inversión recibido y guardado con id {form_id}",
-            data=report_data.dict()
+            data=inversion_request.dict()
         )
     except ValidationError as e:
-        # Capturar errores de validación de Pydantic
         error_messages = []
         for error in e.errors():
             field_path = " -> ".join(str(loc) for loc in error['loc'])
             error_msg = f"{field_path}: {error['msg']}"
             error_messages.append(error_msg)
-        
         error_summary = "; ".join(error_messages)
-        
         return InversionReportResponse(
             success=False,
             message=f"Errores de validación detectados: {error_summary}",
