@@ -1,10 +1,12 @@
 from typing import Annotated  # Recommended for clearer type hinting in FastAPI
 from fastapi import Depends
 
+from application.services.client_service import ClientService
 from application.services.product_service import ProductService
 from application.services.worker_service import WorkerService
 from application.services.form_service import FormService
 from application.services.auth_service import AuthService
+from infrastucture.repositories.client_repository import ClientRepository
 from infrastucture.repositories.productos_repository import ProductRepository
 from infrastucture.repositories.trabajadores_repository import WorkerRepository
 from infrastucture.repositories.formularios_repository import FormRepository  # Nota el plural "repositories"
@@ -15,6 +17,7 @@ product_repository = ProductRepository()
 worker_repository = WorkerRepository()
 form_repository = FormRepository()
 brigada_repository = BrigadaRepository()
+client_repository = ClientRepository()
 
 
 # Dependency functions for repositories
@@ -34,6 +37,11 @@ def get_worker_repository() -> WorkerRepository:
 
 def get_form_repository() -> FormRepository:
     return form_repository
+
+def get_client_repository() -> ClientRepository:
+    return client_repository
+
+
 
 
 def get_brigada_repository() -> BrigadaRepository:
@@ -66,6 +74,12 @@ def get_form_service(
         form_repo: Annotated[FormRepository, Depends(get_form_repository)]
 ) -> FormService:
     return FormService(form_repo)
+
+def get_client_service(
+        client_repo: Annotated[ClientRepository, Depends(get_client_repository)]
+) -> ClientService:
+    return ClientService(client_repo)
+
 
 
 def get_auth_service(

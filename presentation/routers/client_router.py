@@ -7,10 +7,13 @@ from pydantic import BaseModel
 from application.services.product_service import ProductService
 from application.services.worker_service import WorkerService
 from application.services.auth_service import AuthService
+from application.services.client_service import ClientService
 from domain.entities.producto import CatalogoProductos, Material, Cataegoria
 from domain.entities.trabajador import Trabajador
 from domain.entities.brigada import Brigada
-from infrastucture.dependencies import get_product_service, get_worker_service, get_auth_service, get_brigada_repository
+from domain.entities.cliente import Cliente
+from presentation.schemas.requests.ClienteCreateRequest import ClienteCreateRequest
+from infrastucture.dependencies import get_product_service, get_worker_service, get_auth_service, get_brigada_repository, get_client_service
 from infrastucture.repositories.brigada_repository import BrigadaRepository
 
 router = APIRouter()
@@ -248,3 +251,28 @@ async def crear_trabajador_y_asignar_brigada(
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@router.post("/clientes", response_model=Cliente, status_code=201)
+async def crear_cliente(
+    cliente_request: ClienteCreateRequest,
+    client_service: ClientService = Depends(get_client_service)
+):
+    """
+    Crear un nuevo cliente o actualizar si ya existe basado en el número de cliente.
+    Si el número de cliente no existe, crea el cliente completo.
+    Si ya existe, actualiza los demás datos.
+    """
+    try:
+        # Convertir el request a la entidad Cliente
+        cliente = Cliente(
+            numero=cliente_request.numero,
+            nombre=cliente_request.nombre,
+            direccion=cliente_request.direccion,
+            latitud=cliente_request.latitud,
+            longitud=cliente_request.longitud
+        )
+        
+        # Crear o actualizar el cliente
+        cliente_creado = await client_service.create_or_update_client(cliente)
+        return cliente_creado
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
