@@ -65,37 +65,41 @@ class MaterialRequest(BaseModel):
         return v.strip()
 
 
-class UbicacionRequest(BaseModel):
-    """Datos de ubicación para el request"""
-    direccion: str = Field(..., min_length=1, max_length=200, description="Dirección")
-    latitud: str = Field(..., description="Latitud en formato string")
-    longitud: str = Field(..., description="Longitud en formato string")
+class ClienteRequest(BaseModel):
+    """Datos de cliente para el request"""
+    numero:str = Field(..., min_length=1, max_length=200, description="Numero del cliente")
 
-    @validator('latitud')
-    def validate_latitud(cls, v):
-        try:
-            lat = float(v)
-            if not -90 <= lat <= 90:
-                raise ValueError('La latitud debe estar entre -90 y 90 grados')
-        except ValueError:
-            raise ValueError('La latitud debe ser un número válido')
-        return v
-
-    @validator('longitud')
-    def validate_longitud(cls, v):
-        try:
-            lng = float(v)
-            if not -180 <= lng <= 180:
-                raise ValueError('La longitud debe estar entre -180 y 180 grados')
-        except ValueError:
-            raise ValueError('La longitud debe ser un número válido')
-        return v
-
-    @validator('direccion')
-    def validate_direccion(cls, v):
+    @validator('numero')
+    def validate_numero(cls, v):
         if not v.strip():
-            raise ValueError('La dirección no puede estar vacía')
+            raise ValueError('El numero de cliente no puede estar vacio')
         return v.strip()
+
+    # @validator('latitud')
+    # def validate_latitud(cls, v):
+    #     try:
+    #         lat = float(v)
+    #         if not -90 <= lat <= 90:
+    #             raise ValueError('La latitud debe estar entre -90 y 90 grados')
+    #     except ValueError:
+    #         raise ValueError('La latitud debe ser un número válido')
+    #     return v
+    #
+    # @validator('longitud')
+    # def validate_longitud(cls, v):
+    #     try:
+    #         lng = float(v)
+    #         if not -180 <= lng <= 180:
+    #             raise ValueError('La longitud debe estar entre -180 y 180 grados')
+    #     except ValueError:
+    #         raise ValueError('La longitud debe ser un número válido')
+    #     return v
+    #
+    # @validator('direccion')
+    # def validate_direccion(cls, v):
+    #     if not v.strip():
+    #         raise ValueError('La dirección no puede estar vacía')
+    #     return v.strip()
 
 
 class FechaHoraRequest(BaseModel):
@@ -169,7 +173,7 @@ class InversionRequest(BaseModel):
     tipo_reporte: str = Field(default="inversion", description="Tipo de reporte")
     brigada: BrigadaRequest = Field(..., description="Datos de la brigada")
     materiales: List[MaterialRequest] = Field(..., min_items=1, description="Lista de materiales")
-    ubicacion: UbicacionRequest = Field(..., description="Datos de ubicación")
+    cliente: UbicacionRequest = Field(..., description="Datos de ubicación")
     fecha_hora: FechaHoraRequest = Field(..., description="Datos de fecha y hora")
     adjuntos: AdjuntosRequest = Field(..., description="Archivos adjuntos")
     fecha_creacion: str = Field(default_factory=lambda: date.today().isoformat(),

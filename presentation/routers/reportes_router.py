@@ -50,10 +50,8 @@ class InversionReportResponse(BaseModel):
                             "codigo_producto": "CEM001"
                         }
                     ],
-                    "ubicacion": {
-                        "direccion": "Av. Principal 123",
-                        "latitud": "-17.3895",
-                        "longitud": "-66.1568"
+                    "cliente": {
+                        "numero": "1001",
                     },
                     "fecha_hora": {
                         "fecha": "2024-01-15",
