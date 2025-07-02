@@ -93,40 +93,17 @@ async def create_inversion_report(
     tipo_reporte: str = Form(...),
     brigada: str = Form(...),
     materiales: str = Form(...),
-    ubicacion: str = Form(...),
+    cliente: str = Form(...),
     fecha_hora: str = Form(...),
     fotos_inicio: list[UploadFile] = File(...),
     fotos_fin: list[UploadFile] = File(...)
 ):
-    """
-    Crea un nuevo reporte de inversión en el sistema.
-    
-    ## Funcionalidades:
-    - ✅ Validación automática de todos los campos
-    - ✅ Verificación de formatos de fecha y hora
-    - ✅ Validación de coordenadas geográficas
-    - ✅ Verificación de CIs únicas en la brigada
-    - ✅ Validación de imágenes en formato base64
-    
-    ## Campos Requeridos:
-    - **brigada**: Información del líder y equipo de trabajo
-    - **materiales**: Lista de materiales utilizados (mínimo 1)
-    - **ubicacion**: Dirección y coordenadas del trabajo
-    - **fecha_hora**: Programación temporal del trabajo
-    - **adjuntos**: Fotos del antes y después
-    
-    ## Validaciones:
-    - Las CIs de los integrantes deben ser únicas
-    - La hora de fin debe ser posterior a la hora de inicio
-    - Las coordenadas deben estar en rangos válidos
-    - Las cantidades de materiales deben ser números positivos
-    - Debe incluir al menos una foto de inicio y fin
-    """
+
     try:
         # Parsear los campos JSON
         brigada_dict = json.loads(brigada)
         materiales_list = json.loads(materiales)
-        ubicacion_dict = json.loads(ubicacion)
+        cliente_dict = json.loads(cliente)
         fecha_hora_dict = json.loads(fecha_hora)
 
         fotos_inicio_base64 = await FileBase64Converter.files_to_base64(fotos_inicio)
@@ -141,7 +118,7 @@ async def create_inversion_report(
             "tipo_reporte": tipo_reporte,
             "brigada": brigada_dict,
             "materiales": materiales_list,
-            "ubicacion": ubicacion_dict,
+            "cliente": cliente_dict,
             "fecha_hora": fecha_hora_dict,
             "adjuntos": adjuntos
         }
