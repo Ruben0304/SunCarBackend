@@ -173,7 +173,7 @@ class InversionRequest(BaseModel):
     tipo_reporte: str = Field(default="inversion", description="Tipo de reporte")
     brigada: BrigadaRequest = Field(..., description="Datos de la brigada")
     materiales: List[MaterialRequest] = Field(..., min_items=1, description="Lista de materiales")
-    cliente: UbicacionRequest = Field(..., description="Datos de ubicación")
+    cliente: ClienteRequest = Field(..., description="Datos de cliente")
     fecha_hora: FechaHoraRequest = Field(..., description="Datos de fecha y hora")
     adjuntos: AdjuntosRequest = Field(..., description="Archivos adjuntos")
     fecha_creacion: str = Field(default_factory=lambda: date.today().isoformat(),
