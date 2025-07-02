@@ -253,11 +253,7 @@ async def crear_trabajador_y_asignar_brigada(
 
 @router.post("/clientes", response_model=Cliente, status_code=201)
 async def crear_cliente(
-    numero: str = Body(..., embed=True),
-    nombre: str = Body(..., embed=True),
-    direccion: str = Body(..., embed=True),
-    latitud: float = Body(..., embed=True),
-    longitud: float = Body(..., embed=True),
+    cliente_request: ClienteCreateRequest,
     client_service: ClientService = Depends(get_client_service)
 ):
     """
@@ -266,13 +262,13 @@ async def crear_cliente(
     Si ya existe, actualiza los demás datos.
     """
     try:
-        # Crear la entidad Cliente con los parámetros individuales
+        # Convertir el request a la entidad Cliente
         cliente = Cliente(
-            numero=numero,
-            nombre=nombre,
-            direccion=direccion,
-            latitud=latitud,
-            longitud=longitud
+            numero=cliente_request.numero,
+            nombre=cliente_request.nombre,
+            direccion=cliente_request.direccion,
+            latitud=cliente_request.latitud,
+            longitud=cliente_request.longitud
         )
         
         # Crear o actualizar el cliente
