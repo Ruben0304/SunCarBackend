@@ -4,14 +4,18 @@ from typing import List, Optional
 from fastapi import APIRouter, Depends, Body, Query
 from pydantic import BaseModel
 
+from application.services.client_service import ClientService
 from application.services.product_service import ProductService
 from application.services.worker_service import WorkerService
 from application.services.auth_service import AuthService
+from domain.entities.cliente import Cliente
 from domain.entities.producto import CatalogoProductos, Material, Cataegoria
 from domain.entities.trabajador import Trabajador
 from domain.entities.brigada import Brigada
-from infrastucture.dependencies import get_product_service, get_worker_service, get_auth_service, get_brigada_repository
+from infrastucture.dependencies import get_product_service, get_worker_service, get_auth_service, \
+    get_brigada_repository, get_client_service
 from infrastucture.repositories.brigada_repository import BrigadaRepository
+from presentation.schemas.requests.ClienteCreateRequest import ClienteCreateRequest
 
 router = APIRouter()
 
