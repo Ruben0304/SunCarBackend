@@ -7,13 +7,10 @@ from pydantic import BaseModel
 from application.services.product_service import ProductService
 from application.services.worker_service import WorkerService
 from application.services.auth_service import AuthService
-from application.services.client_service import ClientService
 from domain.entities.producto import CatalogoProductos, Material, Cataegoria
 from domain.entities.trabajador import Trabajador
 from domain.entities.brigada import Brigada
-from domain.entities.cliente import Cliente
-from presentation.schemas.requests.ClienteCreateRequest import ClienteCreateRequest
-from infrastucture.dependencies import get_product_service, get_worker_service, get_auth_service, get_brigada_repository, get_client_service
+from infrastucture.dependencies import get_product_service, get_worker_service, get_auth_service, get_brigada_repository
 from infrastucture.repositories.brigada_repository import BrigadaRepository
 
 router = APIRouter()
@@ -274,5 +271,30 @@ async def crear_cliente(
         # Crear o actualizar el cliente
         cliente_creado = await client_service.create_or_update_client(cliente)
         return cliente_creado
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/clientes/{numero}/verificar", response_model=dict)
+async def verificar_cliente_por_numero(
+    numero: str,
+    client_service: ClientService = Depends(get_client_service)
+):
+    """
+    Verificar si existe un cliente por número y retornar solo nombre y dirección si existe.
+    """
+    try:
+        cliente = await client_service.find_client_by_number(numero)
+        
+        if cliente:
+            return {
+                "existe": True,
+                "nombre": cliente.nombre,
+                "direccion": cliente.direccion
+            }
+        else:
+            return {
+                "existe": False,
+                "mensaje": f"No se encontró un cliente con el número {numero}"
+            }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

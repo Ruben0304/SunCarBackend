@@ -1,5 +1,6 @@
 from infrastucture.repositories.client_repository import ClientRepository
 from domain.entities.cliente import Cliente
+from typing import Optional
 
 
 class ClientService:
@@ -11,3 +12,10 @@ class ClientService:
         Crear un nuevo cliente o actualizar si ya existe.
         """
         return await self._client_repository.create_or_update_client(cliente)
+
+    async def find_client_by_number(self, numero: str) -> Optional[Cliente]:
+        """
+        Buscar un cliente por su número.
+        Retorna el cliente si existe, None si no existe.
+        """
+        return await self._client_repository.find_client_by_number(numero)

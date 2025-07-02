@@ -1,5 +1,6 @@
 from infrastucture.database.mongo_db.connection import get_collection
 from domain.entities.cliente import Cliente
+from typing import Optional
 
 
 class ClientRepository:
@@ -24,3 +25,19 @@ class ClientRepository:
         )
         
         return cliente
+
+    async def find_client_by_number(self, numero: str) -> Optional[Cliente]:
+        """
+        Buscar un cliente por su número.
+        Retorna el cliente si existe, None si no existe.
+        """
+        collection = get_collection(self.collection_name)
+        
+        # Buscar el cliente por número
+        cliente_doc = collection.find_one({"numero": numero})
+        
+        if cliente_doc:
+            # Convertir el documento de MongoDB a la entidad Cliente
+            return Cliente.model_validate(cliente_doc)
+        
+        return None
