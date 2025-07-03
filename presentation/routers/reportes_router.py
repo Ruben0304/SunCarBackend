@@ -5,6 +5,8 @@ from fastapi import APIRouter, Depends, status, HTTPException, File, UploadFile,
 from pydantic import BaseModel, Field, ValidationError
 
 from presentation.schemas.requests.InversionFormRequest import InversionRequest
+from presentation.schemas.requests.AveriaFormRequest import AveriaRequest
+from presentation.schemas.requests.MantenimientoFormRequest import MantenimientoRequest
 from application.services.form_service import FormService
 from infrastucture.repositories.formularios_repository import FormRepository
 from infrastucture.external_services.base64_file_converter import FileBase64Converter
@@ -58,6 +60,110 @@ class InversionReportResponse(BaseModel):
                         "hora_inicio": "08:00",
                         "hora_fin": "17:00"
                     },
+                    "adjuntos": {
+                        "fotos_inicio": ["data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQ..."],
+                        "fotos_fin": ["data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQ..."]
+                    }
+                }
+            }
+        }
+
+
+class AveriaReportResponse(BaseModel):
+    """Respuesta del endpoint de reporte de avería"""
+    success: bool = Field(..., description="Indica si la operación fue exitosa")
+    message: str = Field(..., description="Mensaje descriptivo del resultado")
+    data: Optional[dict] = Field(default=None, description="Datos del reporte recibido")
+    
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "success": True,
+                "message": "Reporte de avería recibido correctamente y validado",
+                "data": {
+                    "tipo_reporte": "averia",
+                    "brigada": {
+                        "lider": {
+                            "nombre": "Juan Pérez",
+                            "CI": "12345678"
+                        },
+                        "integrantes": [
+                            {
+                                "nombre": "María García",
+                                "CI": "87654321"
+                            }
+                        ]
+                    },
+                    "materiales": [
+                        {
+                            "tipo": "Repuesto",
+                            "nombre": "Fusible 10A",
+                            "cantidad": "2",
+                            "unidad_medida": "unidad",
+                            "codigo_producto": "FUS001"
+                        }
+                    ],
+                    "cliente": {
+                        "numero": "1001",
+                    },
+                    "fecha_hora": {
+                        "fecha": "2024-01-15",
+                        "hora_inicio": "08:00",
+                        "hora_fin": "17:00"
+                    },
+                    "descripcion": "Falla en el sistema eléctrico del cliente, se detectó un cortocircuito en el panel principal",
+                    "adjuntos": {
+                        "fotos_inicio": ["data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQ..."],
+                        "fotos_fin": ["data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQ..."]
+                    }
+                }
+            }
+        }
+
+
+class MantenimientoReportResponse(BaseModel):
+    """Respuesta del endpoint de reporte de mantenimiento"""
+    success: bool = Field(..., description="Indica si la operación fue exitosa")
+    message: str = Field(..., description="Mensaje descriptivo del resultado")
+    data: Optional[dict] = Field(default=None, description="Datos del reporte recibido")
+    
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "success": True,
+                "message": "Reporte de mantenimiento recibido correctamente y validado",
+                "data": {
+                    "tipo_reporte": "mantenimiento",
+                    "brigada": {
+                        "lider": {
+                            "nombre": "Juan Pérez",
+                            "CI": "12345678"
+                        },
+                        "integrantes": [
+                            {
+                                "nombre": "María García",
+                                "CI": "87654321"
+                            }
+                        ]
+                    },
+                    "materiales": [
+                        {
+                            "tipo": "Lubricante",
+                            "nombre": "Aceite sintético",
+                            "cantidad": "1",
+                            "unidad_medida": "litro",
+                            "codigo_producto": "ACE001"
+                        }
+                    ],
+                    "cliente": {
+                        "numero": "1001",
+                    },
+                    "fecha_hora": {
+                        "fecha": "2024-01-15",
+                        "hora_inicio": "08:00",
+                        "hora_fin": "17:00"
+                    },
+                    "descripcion": "Mantenimiento preventivo del sistema eléctrico, limpieza de contactos y verificación de conexiones",
                     "adjuntos": {
                         "fotos_inicio": ["data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQ..."],
                         "fotos_fin": ["data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQ..."]
@@ -146,3 +252,183 @@ async def create_inversion_report(
             message=f"Error interno del servidor: {str(e)}",
             data={}
         ) 
+
+
+@router.post(
+    "/averia",
+    response_model=AveriaReportResponse,
+    status_code=status.HTTP_201_CREATED,
+    summary="Crear Reporte de Avería",
+    description="""
+    Endpoint para crear un nuevo reporte de avería.
+    
+    Este endpoint recibe los datos completos de un reporte de avería incluyendo:
+    - **Brigada**: Información del líder y integrantes del equipo
+    - **Materiales**: Lista de materiales utilizados en el trabajo (opcional)
+    - **Cliente**: Información del cliente
+    - **Fecha y Hora**: Programación temporal del trabajo
+    - **Descripción**: Descripción detallada de la avería
+    - **Adjuntos**: Fotos del antes y después del trabajo (opcional)
+    
+    El sistema validará automáticamente todos los datos según las reglas de negocio definidas.
+    """,
+    response_description="Reporte de avería creado exitosamente",
+    tags=["Reportes de Avería"]
+)
+async def create_averia_report(
+    tipo_reporte: str = Form(...),
+    brigada: str = Form(...),
+    materiales: str = Form(default="[]"),
+    cliente: str = Form(...),
+    fecha_hora: str = Form(...),
+    descripcion: str = Form(...),
+    fotos_inicio: list[UploadFile] = File(default=[]),
+    fotos_fin: list[UploadFile] = File(default=[])
+):
+
+    try:
+        # Parsear los campos JSON
+        brigada_dict = json.loads(brigada)
+        materiales_list = json.loads(materiales)
+        cliente_dict = json.loads(cliente)
+        fecha_hora_dict = json.loads(fecha_hora)
+
+        # Procesar fotos solo si se proporcionan
+        fotos_inicio_base64 = []
+        fotos_fin_base64 = []
+        
+        if fotos_inicio:
+            fotos_inicio_base64 = await FileBase64Converter.files_to_base64(fotos_inicio)
+        if fotos_fin:
+            fotos_fin_base64 = await FileBase64Converter.files_to_base64(fotos_fin)
+
+        adjuntos = {
+            "fotos_inicio": fotos_inicio_base64,
+            "fotos_fin": fotos_fin_base64
+        }
+
+        request_data = {
+            "tipo_reporte": tipo_reporte,
+            "brigada": brigada_dict,
+            "materiales": materiales_list,
+            "cliente": cliente_dict,
+            "fecha_hora": fecha_hora_dict,
+            "descripcion": descripcion,
+            "adjuntos": adjuntos
+        }
+
+        averia_request = AveriaRequest(**request_data)
+        form_id = form_service.save_form(averia_request.dict())
+        return AveriaReportResponse(
+            success=True,
+            message=f"Reporte de avería recibido y guardado con id {form_id}",
+            data=averia_request.dict()
+        )
+    except ValidationError as e:
+        error_messages = []
+        for error in e.errors():
+            field_path = " -> ".join(str(loc) for loc in error['loc'])
+            error_msg = f"{field_path}: {error['msg']}"
+            error_messages.append(error_msg)
+        error_summary = "; ".join(error_messages)
+        return AveriaReportResponse(
+            success=False,
+            message=f"Errores de validación detectados: {error_summary}",
+            data={}
+        )
+    except Exception as e:
+        return AveriaReportResponse(
+            success=False,
+            message=f"Error interno del servidor: {str(e)}",
+            data={}
+        )
+
+
+@router.post(
+    "/mantenimiento",
+    response_model=MantenimientoReportResponse,
+    status_code=status.HTTP_201_CREATED,
+    summary="Crear Reporte de Mantenimiento",
+    description="""
+    Endpoint para crear un nuevo reporte de mantenimiento.
+    
+    Este endpoint recibe los datos completos de un reporte de mantenimiento incluyendo:
+    - **Brigada**: Información del líder y integrantes del equipo
+    - **Materiales**: Lista de materiales utilizados en el trabajo (opcional)
+    - **Cliente**: Información del cliente
+    - **Fecha y Hora**: Programación temporal del trabajo
+    - **Descripción**: Descripción detallada del mantenimiento realizado
+    - **Adjuntos**: Fotos del antes y después del trabajo (opcional)
+    
+    El sistema validará automáticamente todos los datos según las reglas de negocio definidas.
+    """,
+    response_description="Reporte de mantenimiento creado exitosamente",
+    tags=["Reportes de Mantenimiento"]
+)
+async def create_mantenimiento_report(
+    tipo_reporte: str = Form(...),
+    brigada: str = Form(...),
+    materiales: str = Form(default="[]"),
+    cliente: str = Form(...),
+    fecha_hora: str = Form(...),
+    descripcion: str = Form(...),
+    fotos_inicio: list[UploadFile] = File(default=[]),
+    fotos_fin: list[UploadFile] = File(default=[])
+):
+
+    try:
+        # Parsear los campos JSON
+        brigada_dict = json.loads(brigada)
+        materiales_list = json.loads(materiales)
+        cliente_dict = json.loads(cliente)
+        fecha_hora_dict = json.loads(fecha_hora)
+
+        # Procesar fotos solo si se proporcionan
+        fotos_inicio_base64 = []
+        fotos_fin_base64 = []
+        
+        if fotos_inicio:
+            fotos_inicio_base64 = await FileBase64Converter.files_to_base64(fotos_inicio)
+        if fotos_fin:
+            fotos_fin_base64 = await FileBase64Converter.files_to_base64(fotos_fin)
+
+        adjuntos = {
+            "fotos_inicio": fotos_inicio_base64,
+            "fotos_fin": fotos_fin_base64
+        }
+
+        request_data = {
+            "tipo_reporte": tipo_reporte,
+            "brigada": brigada_dict,
+            "materiales": materiales_list,
+            "cliente": cliente_dict,
+            "fecha_hora": fecha_hora_dict,
+            "descripcion": descripcion,
+            "adjuntos": adjuntos
+        }
+
+        mantenimiento_request = MantenimientoRequest(**request_data)
+        form_id = form_service.save_form(mantenimiento_request.dict())
+        return MantenimientoReportResponse(
+            success=True,
+            message=f"Reporte de mantenimiento recibido y guardado con id {form_id}",
+            data=mantenimiento_request.dict()
+        )
+    except ValidationError as e:
+        error_messages = []
+        for error in e.errors():
+            field_path = " -> ".join(str(loc) for loc in error['loc'])
+            error_msg = f"{field_path}: {error['msg']}"
+            error_messages.append(error_msg)
+        error_summary = "; ".join(error_messages)
+        return MantenimientoReportResponse(
+            success=False,
+            message=f"Errores de validación detectados: {error_summary}",
+            data={}
+        )
+    except Exception as e:
+        return MantenimientoReportResponse(
+            success=False,
+            message=f"Error interno del servidor: {str(e)}",
+            data={}
+        )
