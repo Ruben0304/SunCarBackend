@@ -1,9 +1,10 @@
+from datetime import timezone
 from typing import List, Optional
 from bson import ObjectId
 from pydantic import ValidationError
 from pymongo.errors import PyMongoError
 import logging
-from domain.entities.producto import CatalogoProductos, Material, Cataegoria
+from domain.entities.producto import CatalogoProductos, Material, Cataegoria, MaterialConFecha
 from infrastucture.database.mongo_db.connection import get_collection
 
 logger = logging.getLogger(__name__)
@@ -98,7 +99,40 @@ class ProductRepository:
            logger.error(f"❌ Error obteniendo materiales por categoría: {e}")
            raise Exception(f"Error obteniendo materiales por categoría: {str(e)}")
 
-    def create_product(self, categoria: str, materiales: Optional[List[dict]] = None) -> str:
+    def get_last_update_date(self) -> Optional[int]:
+            """
+            Obtiene el timestamp (Unix) de la fecha y hora más reciente de actualización
+            de todos los materiales en la colección de productos.
+            """
+            try:
+                collection = get_collection(self.collection_name)
+
+                pipeline = [
+                    {"$unwind": "$materiales"},
+                    {"$match": {"materiales.fechaAgregado": {"$exists": True}}},
+                    {
+                        "$group": {
+                            "_id": None,
+                            "ultimaActualizacion": {"$max": "$materiales.fechaAgregado"}
+                        }
+                    }
+                ]
+
+                result = collection.aggregate(pipeline).to_list(length=1)
+
+                if result and len(result) > 0:
+                    fecha = result[0]["ultimaActualizacion"]
+                    # Asegurar que la fecha esté en UTC antes de convertir a timestamp
+                    if fecha.tzinfo is None:
+                        fecha = fecha.replace(tzinfo=timezone.utc)
+                    return int(fecha.timestamp())
+                else:
+                    return None
+
+            except Exception as e:
+                raise e
+
+    def create_category(self, categoria: str, materiales: Optional[List[dict]] = None) -> str:
         """
         Crea un nuevo producto (categoría) con materiales opcionales.
         """
@@ -111,13 +145,30 @@ class ProductRepository:
         })
         return str(result.inserted_id)
 
-    def add_material_to_product(self, producto_id: str, material: dict) -> bool:
+    def add_material_to_category(self, categoria: str, material: MaterialConFecha) -> bool:
         """
-        Agrega un material a un producto existente (por id).
+        Agrega un material a todos los productos de una categoría específica.
+
+        Args:
+            categoria: Nombre de la categoría
+            material: Objeto MaterialConFecha con los datos del material
+
+        Returns:
+            bool: True si se actualizó al menos un producto
         """
-        collection = get_collection(self.collection_name)
-        # Asegurar que el código sea string
-        if "codigo" in material:
-            material["codigo"] = str(material["codigo"])
-        result = collection.update_one({"_id": ObjectId(producto_id)}, {"$push": {"materiales": material}})
-        return result.modified_count > 0
+        try:
+            collection = get_collection(self.collection_name)
+
+            # Convertir el material a dict para MongoDB
+            material_dict = material.model_dump()
+
+            # Actualizar todos los productos de la categoría
+            result = collection.update_many(
+                {"categoria": categoria},
+                {"$push": {"materiales": material_dict}}
+            )
+
+            return result.matched_count > 0
+
+        except Exception as e:
+            raise e

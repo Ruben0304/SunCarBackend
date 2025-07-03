@@ -1,5 +1,8 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from fastapi.exceptions import RequestValidationError
 from starlette.middleware.cors import CORSMiddleware
+from starlette.responses import JSONResponse
+from starlette.status import HTTP_422_UNPROCESSABLE_ENTITY
 
 from presentation.routers.client_router import router as appmovil_router
 from presentation.routers.admin_router import router as webadmin_router
@@ -8,6 +11,7 @@ from presentation.routers.reportes_router import router as reportes_router
 from presentation.routers.brigadas_router import router as brigadas_router
 
 from dotenv import load_dotenv
+from presentation.handlers.validation_exception_handler import validation_exception_handler
 
 app = FastAPI(
     title="SunCar Backend",
@@ -18,6 +22,7 @@ app = FastAPI(
 # Cargar variables de entorno del archivo .env
 load_dotenv()
 
+app.add_exception_handler(RequestValidationError, validation_exception_handler)
 
 app.add_middleware(
     CORSMiddleware,
@@ -57,11 +62,4 @@ app.include_router(
     tags=["Brigadas"]
 )
 
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(
-        app,
-        host="127.0.0.1",
-        port=8000
-    )
 

@@ -67,39 +67,13 @@ class MaterialRequest(BaseModel):
 
 class ClienteRequest(BaseModel):
     """Datos de cliente para el request"""
-    numero:str = Field(..., min_length=1, max_length=200, description="Numero del cliente")
+    numero: str = Field(..., min_length=1, max_length=200, description="Numero del cliente")
 
     @validator('numero')
     def validate_numero(cls, v):
         if not v.strip():
             raise ValueError('El numero de cliente no puede estar vacio')
         return v.strip()
-
-    # @validator('latitud')
-    # def validate_latitud(cls, v):
-    #     try:
-    #         lat = float(v)
-    #         if not -90 <= lat <= 90:
-    #             raise ValueError('La latitud debe estar entre -90 y 90 grados')
-    #     except ValueError:
-    #         raise ValueError('La latitud debe ser un número válido')
-    #     return v
-    #
-    # @validator('longitud')
-    # def validate_longitud(cls, v):
-    #     try:
-    #         lng = float(v)
-    #         if not -180 <= lng <= 180:
-    #             raise ValueError('La longitud debe estar entre -180 y 180 grados')
-    #     except ValueError:
-    #         raise ValueError('La longitud debe ser un número válido')
-    #     return v
-    #
-    # @validator('direccion')
-    # def validate_direccion(cls, v):
-    #     if not v.strip():
-    #         raise ValueError('La dirección no puede estar vacía')
-    #     return v.strip()
 
 
 class FechaHoraRequest(BaseModel):
@@ -143,59 +117,60 @@ class FechaHoraRequest(BaseModel):
 
 class AdjuntosRequest(BaseModel):
     """Datos de adjuntos para el request"""
-    fotos_inicio: List[str] = Field(..., description="Lista de fotos de inicio en base64")
-    fotos_fin: List[str] = Field(..., description="Lista de fotos de fin en base64")
+    fotos_inicio: Optional[List[str]] = Field(default=[], description="Lista de fotos de inicio en base64")
+    fotos_fin: Optional[List[str]] = Field(default=[], description="Lista de fotos de fin en base64")
 
     @validator('fotos_inicio', 'fotos_fin')
     def validate_fotos(cls, v):
-        if not v:
-            raise ValueError('Debe incluir al menos una foto')
-
+        if v is None:
+            return []
+        
         for foto in v:
             if not foto.strip():
                 raise ValueError('Las fotos no pueden estar vacías')
 
             # Si tiene prefijo, quitarlo
-        if ',' in foto:
-            foto_base64 = foto.split(',')[1]
-        else:
-            foto_base64 = foto
+            if ',' in foto:
+                foto_base64 = foto.split(',')[1]
+            else:
+                foto_base64 = foto
 
             # Validación básica de base64
-        if not re.match(r'^[A-Za-z0-9+/]*={0,2}$', foto_base64):
-            raise ValueError('El formato de imagen base64 no es válido')
+            if not re.match(r'^[A-Za-z0-9+/]*={0,2}$', foto_base64):
+                raise ValueError('El formato de imagen base64 no es válido')
 
         return v
 
 
-class InversionRequest(BaseModel):
-    """Request schema para el reporte de inversión"""
-    tipo_reporte: str = Field(default="inversion", description="Tipo de reporte")
+class AveriaRequest(BaseModel):
+    """Request schema para el reporte de avería"""
+    tipo_reporte: str = Field(default="averia", description="Tipo de reporte")
     brigada: BrigadaRequest = Field(..., description="Datos de la brigada")
-    materiales: List[MaterialRequest] = Field(..., min_items=1, description="Lista de materiales")
+    materiales: Optional[List[MaterialRequest]] = Field(default=[], description="Lista de materiales (opcional)")
     cliente: ClienteRequest = Field(..., description="Datos de cliente")
     fecha_hora: FechaHoraRequest = Field(..., description="Datos de fecha y hora")
+    descripcion: str = Field(..., min_length=1, max_length=1000, description="Descripción de la avería")
     adjuntos: AdjuntosRequest = Field(..., description="Archivos adjuntos")
     fecha_creacion: str = Field(default_factory=lambda: date.today().isoformat(),
                                 description="Fecha de creación del reporte")
 
     @validator('tipo_reporte')
     def validate_tipo_reporte(cls, v):
-        if v != "inversion":
-            raise ValueError('El tipo de reporte debe ser "inversion"')
+        if v != "averia":
+            raise ValueError('El tipo de reporte debe ser "averia"')
         return v
 
-    @validator('materiales')
-    def validate_materiales(cls, v):
-        if not v:
-            raise ValueError('Debe incluir al menos un material')
-        return v
+    @validator('descripcion')
+    def validate_descripcion(cls, v):
+        if not v.strip():
+            raise ValueError('La descripción no puede estar vacía')
+        return v.strip()
 
     class Config:
         # Configuración para mejor manejo de errores y documentación
         json_schema_extra = {
             "example": {
-                "tipo_reporte": "inversion",
+                "tipo_reporte": "averia",
                 "brigada": {
                     "lider": {
                         "nombre": "Juan Pérez",
@@ -210,26 +185,25 @@ class InversionRequest(BaseModel):
                 },
                 "materiales": [
                     {
-                        "tipo": "Cemento",
-                        "nombre": "Cemento Portland",
-                        "cantidad": "10",
-                        "unidad_medida": "kg",
-                        "codigo_producto": "CEM001"
+                        "tipo": "Repuesto",
+                        "nombre": "Fusible 10A",
+                        "cantidad": "2",
+                        "unidad_medida": "unidad",
+                        "codigo_producto": "FUS001"
                     }
                 ],
-                "ubicacion": {
-                    "direccion": "Av. Principal 123",
-                    "latitud": "-17.3895",
-                    "longitud": "-66.1568"
+                "cliente": {
+                    "numero": "1001"
                 },
                 "fecha_hora": {
                     "fecha": "2024-01-15",
                     "hora_inicio": "08:00",
                     "hora_fin": "17:00"
                 },
+                "descripcion": "Falla en el sistema eléctrico del cliente, se detectó un cortocircuito en el panel principal",
                 "adjuntos": {
                     "fotos_inicio": ["base64_string_1"],
                     "fotos_fin": ["base64_string_2"]
                 }
             }
-        }
+        } 
