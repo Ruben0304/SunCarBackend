@@ -38,3 +38,22 @@ Content-Type: application/json
 GET http://127.0.0.1:8000/api/brigadas
 Accept: application/json
 
+### Asignar trabajador existente a brigada
+POST http://127.0.0.1:8000/api/brigadas/685aa9ff1823a41af64b1628/trabajadores
+Content-Type: application/json
+
+{
+  "nombre": "Patricia Herrera",
+  "CI": "22334455"
+}
+
+### Crear trabajador y asignarlo a brigada
+POST http://127.0.0.1:8000/api/trabajadores/asignar_brigada
+Content-Type: application/json
+
+{
+  "ci": "123456789012",
+  "nombre": "Jude Bellingham",
+  "brigada_id": "6865f9d13ec25099449b4a00",
+  "contrasena": "heyjude"
+}
