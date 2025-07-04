@@ -15,7 +15,7 @@ from domain.entities.brigada import Brigada
 from infrastucture.dependencies import get_product_service, get_worker_service, get_auth_service, \
     get_brigada_repository, get_client_service
 from infrastucture.repositories.brigada_repository import BrigadaRepository
-from presentation.schemas.requests.ClienteCreateRequest import ClienteCreateRequest
+from presentation.schemas.requests.ClienteCreateRequest import ClienteCreateRequest, ClienteCreateSimpleRequest
 
 router = APIRouter()
 
@@ -300,5 +300,31 @@ async def verificar_cliente_por_numero(
                 "existe": False,
                 "mensaje": f"No se encontró un cliente con el número {numero}"
             }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/clientes/simple", response_model=Cliente, status_code=201)
+async def crear_cliente_simple(
+    cliente_request: ClienteCreateSimpleRequest,
+    client_service: ClientService = Depends(get_client_service)
+):
+    """
+    Crear un nuevo cliente con solo los campos obligatorios (numero, nombre, direccion).
+    Los campos latitud y longitud son opcionales.
+    """
+    try:
+        # Convertir el request a la entidad Cliente
+        cliente = Cliente(
+            numero=cliente_request.numero,
+            nombre=cliente_request.nombre,
+            direccion=cliente_request.direccion,
+            latitud=cliente_request.latitud or "",
+            longitud=cliente_request.longitud or ""
+        )
+        
+        # Crear o actualizar el cliente
+        cliente_creado = await client_service.create_or_update_client(cliente)
+        return cliente_creado
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

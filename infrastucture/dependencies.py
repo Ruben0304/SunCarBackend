@@ -6,6 +6,7 @@ from application.services.product_service import ProductService
 from application.services.worker_service import WorkerService
 from application.services.form_service import FormService
 from application.services.auth_service import AuthService
+from application.services.update_service import UpdateService
 from infrastucture.repositories.client_repository import ClientRepository
 from infrastucture.repositories.productos_repository import ProductRepository
 from infrastucture.repositories.trabajadores_repository import WorkerRepository
@@ -90,3 +91,14 @@ def get_auth_service(
     Dependency for FastAPI that returns an instance of AuthService.
     """
     return AuthService(worker_repo, brigada_repo)
+
+
+def get_update_service(
+        product_service: Annotated[ProductService, Depends(get_product_service)],
+        worker_service: Annotated[WorkerService, Depends(get_worker_service)],
+        client_service: Annotated[ClientService, Depends(get_client_service)]
+) -> UpdateService:
+    """
+    Dependency for FastAPI that returns an instance of UpdateService.
+    """
+    return UpdateService(product_service, worker_service, client_service)
