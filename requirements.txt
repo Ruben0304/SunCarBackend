@@ -4,4 +4,3 @@ pydantic
 pymongo
 motor
 python-dotenv
-python-multipart
