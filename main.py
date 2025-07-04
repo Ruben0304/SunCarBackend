@@ -9,6 +9,7 @@ from presentation.routers.admin_router import router as webadmin_router
 from presentation.routers.shared_router import router as compartidos_router
 from presentation.routers.reportes_router import router as reportes_router
 from presentation.routers.brigadas_router import router as brigadas_router
+from presentation.routers.auth_router import router as auth_router
 
 from dotenv import load_dotenv
 from presentation.handlers.validation_exception_handler import validation_exception_handler
@@ -60,6 +61,12 @@ app.include_router(
     brigadas_router,
     prefix="/api",
     tags=["Brigadas"]
+)
+
+app.include_router(
+    auth_router,
+    prefix="/api/auth",
+    tags=["Auth"]
 )
 
 
