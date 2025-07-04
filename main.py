@@ -62,4 +62,3 @@ app.include_router(
     tags=["Brigadas"]
 )
 
-
