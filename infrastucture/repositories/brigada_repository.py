@@ -250,3 +250,4 @@ class BrigadaRepository:
         collection = get_collection("trabajadores")
         worker = collection.find_one({"CI": ci})
         return bool(worker and worker.get("contraseña"))
+
