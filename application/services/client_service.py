@@ -19,3 +19,6 @@ class ClientService:
         Retorna el cliente si existe, None si no existe.
         """
         return await self._client_repository.find_client_by_number(numero)
+
+    def get_clientes(self, numero=None, nombre=None, direccion=None):
+        return self._client_repository.get_clientes(numero, nombre, direccion)

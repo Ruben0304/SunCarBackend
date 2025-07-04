@@ -105,3 +105,41 @@ class FormRepository:
         except Exception as e:
             logger.error(f"❌ Error guardando formulario: {e}")
             raise Exception(f"Error guardando formulario: {str(e)}")
+
+    def get_reportes(self, tipo_reporte=None, cliente_numero=None, fecha_inicio=None, fecha_fin=None, lider_ci=None, descripcion=None, q=None):
+        """
+        Obtiene reportes con filtros opcionales y los devuelve como dicts serializables.
+        Si se pasa 'q', hace búsqueda global en varios campos.
+        """
+        collection = get_collection(self.collection_name)
+        query = {}
+        if tipo_reporte:
+            query["tipo_reporte"] = tipo_reporte
+        if cliente_numero:
+            query["cliente.numero"] = cliente_numero
+        if fecha_inicio:
+            query["fecha_hora.fecha"] = {"$gte": fecha_inicio}
+        if fecha_fin:
+            if "fecha_hora.fecha" in query:
+                query["fecha_hora.fecha"]["$lte"] = fecha_fin
+            else:
+                query["fecha_hora.fecha"] = {"$lte": fecha_fin}
+        if lider_ci:
+            query["brigada.lider.CI"] = lider_ci
+        if descripcion:
+            query["descripcion"] = {"$regex": descripcion, "$options": "i"}
+        if q:
+            or_conditions = [
+                {"descripcion": {"$regex": q, "$options": "i"}},
+                {"cliente.nombre": {"$regex": q, "$options": "i"}},
+                {"cliente.numero": {"$regex": q, "$options": "i"}},
+                {"brigada.lider.nombre": {"$regex": q, "$options": "i"}},
+                {"tipo_reporte": {"$regex": q, "$options": "i"}},
+            ]
+            query["$or"] = or_conditions
+        cursor = collection.find(query)
+        reportes = []
+        for doc in cursor:
+            doc["id"] = str(doc.pop("_id"))
+            reportes.append(doc)
+        return reportes

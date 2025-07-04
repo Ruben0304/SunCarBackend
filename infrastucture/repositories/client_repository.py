@@ -41,3 +41,22 @@ class ClientRepository:
             return Cliente.model_validate(cliente_doc)
         
         return None
+
+    def get_clientes(self, numero=None, nombre=None, direccion=None):
+        """
+        Obtiene clientes con filtros opcionales y los devuelve como dicts serializables.
+        """
+        collection = get_collection(self.collection_name)
+        query = {}
+        if numero:
+            query["numero"] = numero
+        if nombre:
+            query["nombre"] = {"$regex": nombre, "$options": "i"}
+        if direccion:
+            query["direccion"] = {"$regex": direccion, "$options": "i"}
+        cursor = collection.find(query)
+        clientes = []
+        for doc in cursor:
+            doc["id"] = str(doc.pop("_id"))
+            clientes.append(doc)
+        return clientes

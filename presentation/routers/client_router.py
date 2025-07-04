@@ -1,7 +1,6 @@
-from http.client import HTTPException
+from fastapi import APIRouter, Depends, Body, Query, HTTPException
 from typing import List, Optional
 
-from fastapi import APIRouter, Depends, Body, Query
 from pydantic import BaseModel
 
 from application.services.client_service import ClientService
@@ -302,6 +301,17 @@ async def verificar_cliente_por_numero(
             }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/clientes", summary="Listar clientes", tags=["Clientes"], response_model=List[dict])
+def listar_clientes(
+    numero: Optional[str] = Query(None, description="Número de cliente"),
+    nombre: Optional[str] = Query(None, description="Nombre del cliente (búsqueda parcial)"),
+    direccion: Optional[str] = Query(None, description="Dirección del cliente (búsqueda parcial)"),
+    client_service: ClientService = Depends(get_client_service)
+):
+    """Listar clientes con filtros opcionales."""
+    clientes = client_service.get_clientes(numero, nombre, direccion)
+    return clientes
 
 
 @router.post("/clientes/simple", response_model=Cliente, status_code=201)

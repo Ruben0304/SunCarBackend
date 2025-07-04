@@ -159,16 +159,27 @@ class ProductRepository:
         try:
             collection = get_collection(self.collection_name)
 
-            # Convertir el material a dict para MongoDB
-            material_dict = material.model_dump()
+            # Debug prints para ver los datos que llegan
+            print(f"[DEBUG] categoria: {categoria}")
+            print(f"[DEBUG] material: {material}")
 
-            # Actualizar todos los productos de la categoría
+            # Convertir el material a dict para MongoDB solo si es modelo Pydantic
+            if hasattr(material, 'model_dump'):
+                material_dict = material.model_dump()
+            else:
+                material_dict = material
+
+            print(f"[DEBUG] material_dict: {material_dict}")
+
+            # Actualizar el producto por su _id
             result = collection.update_many(
-                {"categoria": categoria},
+                {"_id": ObjectId(categoria)},
                 {"$push": {"materiales": material_dict}}
             )
 
             return result.matched_count > 0
 
         except Exception as e:
+            logger.error(f"❌ Error agregando material a la categoría: {e}")
+            print(f"❌ Error agregando material a la categoría: {e}")
             raise e
