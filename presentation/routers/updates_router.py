@@ -7,6 +7,7 @@ from domain.entities.update import DataUpdateRequest, DataUpdateResponse, AppUpd
 from application.services.form_service import FormService
 from application.services.update_service import UpdateService
 from infrastucture.dependencies import get_form_service, get_update_service
+from presentation.schemas.responses import UpdateStatusResponse
 
 router = APIRouter()
 
@@ -55,7 +56,7 @@ async def check_app_updates(
         raise HTTPException(status_code=500, detail=f"Error al verificar actualización de app: {str(e)}")
 
 
-@router.get("/update/status")
+@router.get("/update/status", response_model=UpdateStatusResponse)
 async def get_update_status(
     update_service: UpdateService = Depends(get_update_service)
 ):
@@ -64,15 +65,15 @@ async def get_update_status(
     Útil para monitoreo y debugging.
     """
     try:
-        return {
-            "system_status": "operational",
-            "last_check": datetime.now().isoformat(),
-            "available_entities": ["materiales", "trabajadores", "clientes"],
-            "app_versions": {
+        return UpdateStatusResponse(
+            system_status="operational",
+            last_check=datetime.now().isoformat(),
+            available_entities=["materiales", "trabajadores", "clientes"],
+            app_versions={
                 "android": update_service.app_versions["android"]["latest_version"],
                 "ios": update_service.app_versions["ios"]["latest_version"]
             }
-        }
+        )
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error al obtener estado: {str(e)}")
 

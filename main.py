@@ -4,13 +4,15 @@ from starlette.middleware.cors import CORSMiddleware
 from starlette.responses import JSONResponse
 from starlette.status import HTTP_422_UNPROCESSABLE_ENTITY
 
-from presentation.routers.client_router import router as appmovil_router
-from presentation.routers.admin_router import router as webadmin_router
-from presentation.routers.shared_router import router as compartidos_router
-from presentation.routers.reportes_router import router as reportes_router
+from presentation.routers.auth_router import router as auth_router
+from presentation.routers.trabajadores_router import router as trabajadores_router
 from presentation.routers.brigadas_router import router as brigadas_router
-from presentation.routers.auth_manage_router import router  as auth_router
+from presentation.routers.clientes_router import router as clientes_router
+from presentation.routers.productos_router import router as productos_router
+from presentation.routers.reportes_router import router as reportes_router
 from presentation.routers.updates_router import router as updates_router
+from presentation.routers.admin_router import router as admin_router
+from presentation.routers.shared_router import router as shared_router
 
 from dotenv import load_dotenv
 from presentation.handlers.validation_exception_handler import validation_exception_handler
@@ -33,23 +35,35 @@ app.add_middleware(
     allow_methods=["*"],  # Permite todos los métodos HTTP
     allow_headers=["*"],  # Permite todos los encabezados
 )
-# Incluir los routers con prefijos para organizar las rutas
+# Incluir los routers organizados por features
 app.include_router(
-    appmovil_router,
-    prefix="/api",
-    tags=["App Móvil"]
+    auth_router,
+    prefix="/api/auth",
+    tags=["Autenticación"]
 )
 
 app.include_router(
-    webadmin_router,
-    prefix="/api",
-    tags=["Web Admin"]
+    trabajadores_router,
+    prefix="/api/trabajadores",
+    tags=["Trabajadores"]
 )
 
 app.include_router(
-    compartidos_router,
-    prefix="/api",
-    tags=["Compartidos"]
+    brigadas_router,
+    prefix="/api/brigadas",
+    tags=["Brigadas"]
+)
+
+app.include_router(
+    clientes_router,
+    prefix="/api/clientes",
+    tags=["Clientes"]
+)
+
+app.include_router(
+    productos_router,
+    prefix="/api/productos",
+    tags=["Productos"]
 )
 
 app.include_router(
@@ -59,21 +73,21 @@ app.include_router(
 )
 
 app.include_router(
-    brigadas_router,
-    prefix="/api",
-    tags=["Brigadas"]
-)
-
-app.include_router(
-    auth_router,
-    prefix="/api/auth",
-    tags=["Auth"]
-)
-
-app.include_router(
     updates_router,
-    prefix="/api",
+    prefix="/api/updates",
     tags=["Actualizaciones"]
+)
+
+app.include_router(
+    admin_router,
+    prefix="/api/admin",
+    tags=["Administración"]
+)
+
+app.include_router(
+    shared_router,
+    prefix="/api",
+    tags=["Compartidos"]
 )
 
 

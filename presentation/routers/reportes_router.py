@@ -4,173 +4,35 @@ from typing import List, Optional
 from fastapi import APIRouter, Depends, status, HTTPException, File, UploadFile, Form
 from pydantic import BaseModel, Field, ValidationError
 
+from infrastucture.dependencies import get_form_service
 from presentation.schemas.requests.InversionFormRequest import InversionRequest
 from presentation.schemas.requests.AveriaFormRequest import AveriaRequest
 from presentation.schemas.requests.MantenimientoFormRequest import MantenimientoRequest
 from application.services.form_service import FormService
-from infrastucture.repositories.formularios_repository import FormRepository
+from infrastucture.repositories.reportes_repository import FormRepository
 from infrastucture.external_services.base64_file_converter import FileBase64Converter
+from presentation.schemas.responses import (
+    InversionReportResponse,
+    AveriaReportResponse,
+    MantenimientoReportResponse,
+    HoursWorkedResponse,
+)
+from domain.entities.form import Form as FormEntity
 import base64
 import json
 
+from presentation.schemas.responses.reportes_responses import AllWorkersHoursWorkedResponse
+
 router = APIRouter()
 
-form_service = FormService(FormRepository())
+form_service = Depends(get_form_service)
 
 
-class InversionReportResponse(BaseModel):
-    """Respuesta del endpoint de reporte de inversión"""
-    success: bool = Field(..., description="Indica si la operación fue exitosa")
-    message: str = Field(..., description="Mensaje descriptivo del resultado")
-    data: Optional[dict] = Field(default=None, description="Datos del reporte recibido")
-    
-    class Config:
-        json_schema_extra = {
-            "example": {
-                "success": True,
-                "message": "Reporte de inversión recibido correctamente y validado",
-                "data": {
-                    "tipo_reporte": "inversion",
-                    "brigada": {
-                        "lider": {
-                            "nombre": "Juan Pérez",
-                            "CI": "12345678"
-                        },
-                        "integrantes": [
-                            {
-                                "nombre": "María García",
-                                "CI": "87654321"
-                            }
-                        ]
-                    },
-                    "materiales": [
-                        {
-                            "tipo": "Cemento",
-                            "nombre": "Cemento Portland",
-                            "cantidad": "10",
-                            "unidad_medida": "kg",
-                            "codigo_producto": "CEM001"
-                        }
-                    ],
-                    "cliente": {
-                        "numero": "1001",
-                    },
-                    "fecha_hora": {
-                        "fecha": "2024-01-15",
-                        "hora_inicio": "08:00",
-                        "hora_fin": "17:00"
-                    },
-                    "adjuntos": {
-                        "fotos_inicio": ["data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQ..."],
-                        "fotos_fin": ["data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQ..."]
-                    }
-                }
-            }
-        }
 
-
-class AveriaReportResponse(BaseModel):
-    """Respuesta del endpoint de reporte de avería"""
-    success: bool = Field(..., description="Indica si la operación fue exitosa")
-    message: str = Field(..., description="Mensaje descriptivo del resultado")
-    data: Optional[dict] = Field(default=None, description="Datos del reporte recibido")
-    
-    class Config:
-        json_schema_extra = {
-            "example": {
-                "success": True,
-                "message": "Reporte de avería recibido correctamente y validado",
-                "data": {
-                    "tipo_reporte": "averia",
-                    "brigada": {
-                        "lider": {
-                            "nombre": "Juan Pérez",
-                            "CI": "12345678"
-                        },
-                        "integrantes": [
-                            {
-                                "nombre": "María García",
-                                "CI": "87654321"
-                            }
-                        ]
-                    },
-                    "materiales": [
-                        {
-                            "tipo": "Repuesto",
-                            "nombre": "Fusible 10A",
-                            "cantidad": "2",
-                            "unidad_medida": "unidad",
-                            "codigo_producto": "FUS001"
-                        }
-                    ],
-                    "cliente": {
-                        "numero": "1001",
-                    },
-                    "fecha_hora": {
-                        "fecha": "2024-01-15",
-                        "hora_inicio": "08:00",
-                        "hora_fin": "17:00"
-                    },
-                    "descripcion": "Falla en el sistema eléctrico del cliente, se detectó un cortocircuito en el panel principal",
-                    "adjuntos": {
-                        "fotos_inicio": ["data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQ..."],
-                        "fotos_fin": ["data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQ..."]
-                    }
-                }
-            }
-        }
-
-
-class MantenimientoReportResponse(BaseModel):
-    """Respuesta del endpoint de reporte de mantenimiento"""
-    success: bool = Field(..., description="Indica si la operación fue exitosa")
-    message: str = Field(..., description="Mensaje descriptivo del resultado")
-    data: Optional[dict] = Field(default=None, description="Datos del reporte recibido")
-    
-    class Config:
-        json_schema_extra = {
-            "example": {
-                "success": True,
-                "message": "Reporte de mantenimiento recibido correctamente y validado",
-                "data": {
-                    "tipo_reporte": "mantenimiento",
-                    "brigada": {
-                        "lider": {
-                            "nombre": "Juan Pérez",
-                            "CI": "12345678"
-                        },
-                        "integrantes": [
-                            {
-                                "nombre": "María García",
-                                "CI": "87654321"
-                            }
-                        ]
-                    },
-                    "materiales": [
-                        {
-                            "tipo": "Lubricante",
-                            "nombre": "Aceite sintético",
-                            "cantidad": "1",
-                            "unidad_medida": "litro",
-                            "codigo_producto": "ACE001"
-                        }
-                    ],
-                    "cliente": {
-                        "numero": "1001",
-                    },
-                    "fecha_hora": {
-                        "fecha": "2024-01-15",
-                        "hora_inicio": "08:00",
-                        "hora_fin": "17:00"
-                    },
-                    "descripcion": "Mantenimiento preventivo del sistema eléctrico, limpieza de contactos y verificación de conexiones",
-                    "adjuntos": {
-                        "fotos_inicio": ["data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQ..."],
-                        "fotos_fin": ["data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQ..."]
-                    }
-                }
-            }
-        }
+@router.get("/", response_model=List[FormEntity])
+async def get_all_forms() -> List[FormEntity]:
+    forms = await form_service.get_all_forms()
+    return forms
 
 
 @router.post(
@@ -430,5 +292,92 @@ async def create_mantenimiento_report(
         return MantenimientoReportResponse(
             success=False,
             message=f"Error interno del servidor: {str(e)}",
+            data={}
+        )
+
+
+@router.get(
+    "/horas-trabajadas/{ci}",
+    response_model=HoursWorkedResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Obtener Horas Trabajadas por CI",
+    description="""
+    Endpoint para obtener el total de horas trabajadas por una persona en un rango de fechas específico.
+    
+    Este endpoint calcula las horas trabajadas basándose en:
+    - **CI**: Cédula de identidad de la persona
+    - **Fecha Inicio**: Fecha de inicio del rango (formato: YYYY-MM-DD)
+    - **Fecha Fin**: Fecha de fin del rango (formato: YYYY-MM-DD)
+    
+    El cálculo incluye todas las actividades donde la persona aparece como líder o integrante de brigada.
+    """,
+    response_description="Horas trabajadas obtenidas exitosamente",
+    tags=["Reportes - Consultas"]
+)
+async def get_hours_worked_by_ci(
+    ci: str,
+    fecha_inicio: str,
+    fecha_fin: str
+):
+    try:
+        total_horas = form_service.get_hours_worked_by_ci(ci, fecha_inicio, fecha_fin)
+        
+        return HoursWorkedResponse(
+            success=True,
+            message=f"Horas trabajadas obtenidas correctamente para CI {ci}",
+            data={
+                "ci": ci,
+                "fecha_inicio": fecha_inicio,
+                "fecha_fin": fecha_fin,
+                "total_horas": total_horas
+            }
+        )
+    except Exception as e:
+        return HoursWorkedResponse(
+            success=False,
+            message=f"Error obteniendo horas trabajadas: {str(e)}",
+            data={}
+        )
+
+
+@router.get(
+    "/horas-trabajadas-todos",
+    response_model=AllWorkersHoursWorkedResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Obtener Horas Trabajadas de Todos los Trabajadores",
+    description="""
+    Endpoint para obtener el total de horas trabajadas de todos los trabajadores en un rango de fechas específico.
+    
+    Este endpoint calcula las horas trabajadas de todos los trabajadores basándose en:
+    - **Fecha Inicio**: Fecha de inicio del rango (formato: YYYY-MM-DD)
+    - **Fecha Fin**: Fecha de fin del rango (formato: YYYY-MM-DD)
+    
+    El cálculo incluye todas las actividades donde cada persona aparece como líder o integrante de brigada.
+    Los resultados se ordenan por total de horas trabajadas de mayor a menor.
+    """,
+    response_description="Horas trabajadas de todos los trabajadores obtenidas exitosamente",
+    tags=["Reportes - Consultas"]
+)
+async def get_all_workers_hours_worked(
+    fecha_inicio: str,
+    fecha_fin: str
+):
+    try:
+        trabajadores = form_service.get_all_workers_hours_worked(fecha_inicio, fecha_fin)
+        
+        return AllWorkersHoursWorkedResponse(
+            success=True,
+            message=f"Horas trabajadas de todos los trabajadores obtenidas correctamente",
+            data={
+                "fecha_inicio": fecha_inicio,
+                "fecha_fin": fecha_fin,
+                "total_trabajadores": len(trabajadores),
+                "trabajadores": trabajadores
+            }
+        )
+    except Exception as e:
+        return AllWorkersHoursWorkedResponse(
+            success=False,
+            message=f"Error obteniendo horas trabajadas de todos los trabajadores: {str(e)}",
             data={}
         )

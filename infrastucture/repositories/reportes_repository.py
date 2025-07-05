@@ -105,3 +105,221 @@ class FormRepository:
         except Exception as e:
             logger.error(f"❌ Error guardando formulario: {e}")
             raise Exception(f"Error guardando formulario: {str(e)}")
+
+    def get_hours_worked_by_ci(self, ci: str, fecha_inicio: str, fecha_fin: str) -> float:
+        """
+        Obtiene el total de horas trabajadas por una persona dado su CI y rango de fechas.
+        
+        :param ci: Cédula de identidad de la persona
+        :param fecha_inicio: Fecha de inicio del rango (formato: YYYY-MM-DD)
+        :param fecha_fin: Fecha de fin del rango (formato: YYYY-MM-DD)
+        :return: Total de horas trabajadas
+        """
+        try:
+            collection = get_collection(self.collection_name)
+
+            pipeline = [
+                {
+                    "$match": {
+                        "$and": [
+                            {
+                                "fecha_hora.fecha": {
+                                    "$gte": fecha_inicio,
+                                    "$lte": fecha_fin
+                                }
+                            },
+                            {
+                                "$or": [
+                                    {"brigada.lider.CI": ci},
+                                    {"brigada.integrantes.CI": ci}
+                                ]
+                            }
+                        ]
+                    }
+                },
+                {
+                    "$addFields": {
+                        "horas_trabajadas": {
+                            "$divide": [
+                                {
+                                    "$subtract": [
+                                        {
+                                            "$add": [
+                                                {
+                                                    "$multiply": [
+                                                        {"$toInt": {"$substr": ["$fecha_hora.hora_fin", 0, 2]}},
+                                                        60
+                                                    ]
+                                                },
+                                                {"$toInt": {"$substr": ["$fecha_hora.hora_fin", 3, 2]}}
+                                            ]
+                                        },
+                                        {
+                                            "$add": [
+                                                {
+                                                    "$multiply": [
+                                                        {"$toInt": {"$substr": ["$fecha_hora.hora_inicio", 0, 2]}},
+                                                        60
+                                                    ]
+                                                },
+                                                {"$toInt": {"$substr": ["$fecha_hora.hora_inicio", 3, 2]}}
+                                            ]
+                                        }
+                                    ]
+                                },
+                                60
+                            ]
+                        }
+                    }
+                },
+                {
+                    "$group": {
+                        "_id": None,
+                        "total_horas": {"$sum": "$horas_trabajadas"}
+                    }
+                }
+            ]
+
+            result = list(collection.aggregate(pipeline))
+
+            if result:
+                return round(result[0]["total_horas"], 2)
+            else:
+                return 0.0
+
+        except Exception as e:
+            logger.error(f"❌ Error obteniendo horas trabajadas por CI: {e}")
+            raise Exception(f"Error obteniendo horas trabajadas por CI: {str(e)}")
+
+    def get_all_workers_hours_worked(self, fecha_inicio: str, fecha_fin: str) -> List[dict]:
+        """
+        Obtiene todos los trabajadores con sus horas trabajadas en un rango de fechas específico.
+        
+        :param fecha_inicio: Fecha de inicio del rango (formato: YYYY-MM-DD)
+        :param fecha_fin: Fecha de fin del rango (formato: YYYY-MM-DD)
+        :return: Lista de trabajadores con sus horas trabajadas
+        """
+        try:
+            collection = get_collection(self.collection_name)
+
+            pipeline = [
+                {
+                    "$match": {
+                        "fecha_hora.fecha": {
+                            "$gte": fecha_inicio,
+                            "$lte": fecha_fin
+                        }
+                    }
+                },
+                {
+                    "$addFields": {
+                        "horas_trabajadas": {
+                            "$divide": [
+                                {
+                                    "$subtract": [
+                                        {
+                                            "$add": [
+                                                {
+                                                    "$multiply": [
+                                                        {"$toInt": {"$substr": ["$fecha_hora.hora_fin", 0, 2]}},
+                                                        60
+                                                    ]
+                                                },
+                                                {"$toInt": {"$substr": ["$fecha_hora.hora_fin", 3, 2]}}
+                                            ]
+                                        },
+                                        {
+                                            "$add": [
+                                                {
+                                                    "$multiply": [
+                                                        {"$toInt": {"$substr": ["$fecha_hora.hora_inicio", 0, 2]}},
+                                                        60
+                                                    ]
+                                                },
+                                                {"$toInt": {"$substr": ["$fecha_hora.hora_inicio", 3, 2]}}
+                                            ]
+                                        }
+                                    ]
+                                },
+                                60
+                            ]
+                        }
+                    }
+                },
+                {
+                    "$project": {
+                        "horas_trabajadas": 1,
+                        "lider": "$brigada.lider",
+                        "integrantes": "$brigada.integrantes"
+                    }
+                },
+                {
+                    "$facet": {
+                        "lideres": [
+                            {
+                                "$unwind": "$lider"
+                            },
+                            {
+                                "$group": {
+                                    "_id": "$lider.CI",
+                                    "nombre": {"$first": "$lider.nombre"},
+                                    "apellido": {"$first": "$lider.apellido"},
+                                    "total_horas": {"$sum": "$horas_trabajadas"}
+                                }
+                            }
+                        ],
+                        "integrantes": [
+                            {
+                                "$unwind": "$integrantes"
+                            },
+                            {
+                                "$group": {
+                                    "_id": "$integrantes.CI",
+                                    "nombre": {"$first": "$integrantes.nombre"},
+                                    "apellido": {"$first": "$integrantes.apellido"},
+                                    "total_horas": {"$sum": "$horas_trabajadas"}
+                                }
+                            }
+                        ]
+                    }
+                },
+                {
+                    "$project": {
+                        "todos_trabajadores": {
+                            "$concatArrays": ["$lideres", "$integrantes"]
+                        }
+                    }
+                },
+                {
+                    "$unwind": "$todos_trabajadores"
+                },
+                {
+                    "$group": {
+                        "_id": "$todos_trabajadores._id",
+                        "nombre": {"$first": "$todos_trabajadores.nombre"},
+                        "apellido": {"$first": "$todos_trabajadores.apellido"},
+                        "total_horas": {"$sum": "$todos_trabajadores.total_horas"}
+                    }
+                },
+                {
+                    "$project": {
+                        "_id": 0,
+                        "ci": "$_id",
+                        "nombre": 1,
+                        "apellido": 1,
+                        "total_horas": {"$round": ["$total_horas", 2]}
+                    }
+                },
+                {
+                    "$sort": {"total_horas": -1}
+                }
+            ]
+
+            result = list(collection.aggregate(pipeline))
+            return result
+
+        except Exception as e:
+            logger.error(f"❌ Error obteniendo horas trabajadas de todos los trabajadores: {e}")
+            raise Exception(f"Error obteniendo horas trabajadas de todos los trabajadores: {str(e)}")
+
+  

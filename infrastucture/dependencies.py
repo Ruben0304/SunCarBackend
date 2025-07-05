@@ -10,7 +10,7 @@ from application.services.update_service import UpdateService
 from infrastucture.repositories.client_repository import ClientRepository
 from infrastucture.repositories.productos_repository import ProductRepository
 from infrastucture.repositories.trabajadores_repository import WorkerRepository
-from infrastucture.repositories.formularios_repository import FormRepository  # Nota el plural "repositories"
+from infrastucture.repositories.reportes_repository import FormRepository  # Nota el plural "repositories"
 from infrastucture.repositories.brigada_repository import BrigadaRepository
 
 # Global singleton instances for repositories
