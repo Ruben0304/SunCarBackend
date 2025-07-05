@@ -25,8 +25,6 @@ from presentation.schemas.responses.reportes_responses import AllWorkersHoursWor
 
 router = APIRouter()
 
-form_service = Depends(get_form_service)
-
 
 
 # @router.get("/", response_model=List[FormEntity])
@@ -62,7 +60,8 @@ async def create_inversion_report(
         cliente: str = Form(...),
         fecha_hora: str = Form(...),
         fotos_inicio: list[UploadFile] = File(...),
-        fotos_fin: list[UploadFile] = File(...)
+        fotos_fin: list[UploadFile] = File(...),
+        form_service: FormService = Depends(get_form_service)
 ):
     try:
         # Parsear los campos JSON
@@ -144,7 +143,8 @@ async def create_averia_report(
         fecha_hora: str = Form(...),
         descripcion: str = Form(...),
         fotos_inicio: list[UploadFile] = File(default=[]),
-        fotos_fin: list[UploadFile] = File(default=[])
+        fotos_fin: list[UploadFile] = File(default=[]),
+        form_service: FormService = Depends(get_form_service)
 ):
     try:
         # Parsear los campos JSON
@@ -233,7 +233,8 @@ async def create_mantenimiento_report(
         fecha_hora: str = Form(...),
         descripcion: str = Form(...),
         fotos_inicio: list[UploadFile] = File(default=[]),
-        fotos_fin: list[UploadFile] = File(default=[])
+        fotos_fin: list[UploadFile] = File(default=[]),
+        form_service: FormService = Depends(get_form_service)
 ):
     try:
         # Parsear los campos JSON
@@ -314,7 +315,8 @@ async def create_mantenimiento_report(
 async def get_hours_worked_by_ci(
     ci: str,
     fecha_inicio: str,
-    fecha_fin: str
+    fecha_fin: str,
+    form_service: FormService = Depends(get_form_service)
 ):
     try:
         total_horas = form_service.get_hours_worked_by_ci(ci, fecha_inicio, fecha_fin)
@@ -357,7 +359,8 @@ async def get_hours_worked_by_ci(
 )
 async def get_all_workers_hours_worked(
     fecha_inicio: str,
-    fecha_fin: str
+    fecha_fin: str,
+    form_service: FormService = Depends(get_form_service)
 ):
     try:
         trabajadores = form_service.get_all_workers_hours_worked(fecha_inicio, fecha_fin)
@@ -389,6 +392,7 @@ def listar_reportes(
     lider_ci: Optional[str] = Query(None, description="CI del líder de brigada"),
     descripcion: Optional[str] = Query(None, description="Búsqueda parcial en la descripción del reporte"),
     q: Optional[str] = Query(None, description="Búsqueda global en varios campos: descripción, nombre de cliente, nombre de líder, tipo de reporte, número de cliente"),
+    form_service: FormService = Depends(get_form_service)
 ):
     """Listar reportes de la colección principal con filtros opcionales, incluyendo búsqueda global por 'q'."""
     reportes = form_service.get_reportes(tipo_reporte, cliente_numero, fecha_inicio, fecha_fin, lider_ci, descripcion, q)
@@ -402,6 +406,7 @@ def listar_reportes_view(
     fecha_inicio: Optional[str] = Query(None, description="Fecha inicio (YYYY-MM-DD)"),
     fecha_fin: Optional[str] = Query(None, description="Fecha fin (YYYY-MM-DD)"),
     lider_ci: Optional[str] = Query(None, description="CI del líder de brigada"),
+    form_service: FormService = Depends(get_form_service)
 ):
     """Listar reportes desde la vista reportes_view con filtros opcionales."""
     reportes = form_service.get_reportes_view(tipo_reporte, cliente_numero, fecha_inicio, fecha_fin, lider_ci)
@@ -416,6 +421,7 @@ def listar_reportes_por_cliente(
     fecha_inicio: Optional[str] = Query(None, description="Fecha inicio (YYYY-MM-DD)"),
     fecha_fin: Optional[str] = Query(None, description="Fecha fin (YYYY-MM-DD)"),
     lider_ci: Optional[str] = Query(None, description="CI del líder de brigada (opcional)"),
+    form_service: FormService = Depends(get_form_service)
 ):
     """Listar todos los reportes de un cliente (de cualquier tipo)."""
     if desde_vista:
