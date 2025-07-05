@@ -15,13 +15,10 @@ from presentation.schemas.responses import (
     InversionReportResponse,
     AveriaReportResponse,
     MantenimientoReportResponse,
-    HoursWorkedResponse,
 )
 from domain.entities.form import Form as FormEntity
 import base64
 import json
-
-from presentation.schemas.responses.reportes_responses import AllWorkersHoursWorkedResponse
 
 router = APIRouter()
 
@@ -294,93 +291,7 @@ async def create_mantenimiento_report(
         )
 
 
-@router.get(
-    "/horas-trabajadas/{ci}",
-    response_model=HoursWorkedResponse,
-    status_code=status.HTTP_200_OK,
-    summary="Obtener Horas Trabajadas por CI",
-    description="""
-    Endpoint para obtener el total de horas trabajadas por una persona en un rango de fechas específico.
-    
-    Este endpoint calcula las horas trabajadas basándose en:
-    - **CI**: Cédula de identidad de la persona
-    - **Fecha Inicio**: Fecha de inicio del rango (formato: YYYY-MM-DD)
-    - **Fecha Fin**: Fecha de fin del rango (formato: YYYY-MM-DD)
-    
-    El cálculo incluye todas las actividades donde la persona aparece como líder o integrante de brigada.
-    """,
-    response_description="Horas trabajadas obtenidas exitosamente",
-    tags=["Reportes - Consultas"]
-)
-async def get_hours_worked_by_ci(
-    ci: str,
-    fecha_inicio: str,
-    fecha_fin: str,
-    form_service: FormService = Depends(get_form_service)
-):
-    try:
-        total_horas = form_service.get_hours_worked_by_ci(ci, fecha_inicio, fecha_fin)
-        
-        return HoursWorkedResponse(
-            success=True,
-            message=f"Horas trabajadas obtenidas correctamente para CI {ci}",
-            data={
-                "ci": ci,
-                "fecha_inicio": fecha_inicio,
-                "fecha_fin": fecha_fin,
-                "total_horas": total_horas
-            }
-        )
-    except Exception as e:
-        return HoursWorkedResponse(
-            success=False,
-            message=f"Error obteniendo horas trabajadas: {str(e)}",
-            data={}
-        )
 
-
-@router.get(
-    "/horas-trabajadas-todos",
-    response_model=AllWorkersHoursWorkedResponse,
-    status_code=status.HTTP_200_OK,
-    summary="Obtener Horas Trabajadas de Todos los Trabajadores",
-    description="""
-    Endpoint para obtener el total de horas trabajadas de todos los trabajadores en un rango de fechas específico.
-    
-    Este endpoint calcula las horas trabajadas de todos los trabajadores basándose en:
-    - **Fecha Inicio**: Fecha de inicio del rango (formato: YYYY-MM-DD)
-    - **Fecha Fin**: Fecha de fin del rango (formato: YYYY-MM-DD)
-    
-    El cálculo incluye todas las actividades donde cada persona aparece como líder o integrante de brigada.
-    Los resultados se ordenan por total de horas trabajadas de mayor a menor.
-    """,
-    response_description="Horas trabajadas de todos los trabajadores obtenidas exitosamente",
-    tags=["Reportes - Consultas"]
-)
-async def get_all_workers_hours_worked(
-    fecha_inicio: str,
-    fecha_fin: str,
-    form_service: FormService = Depends(get_form_service)
-):
-    try:
-        trabajadores = form_service.get_all_workers_hours_worked(fecha_inicio, fecha_fin)
-        
-        return AllWorkersHoursWorkedResponse(
-            success=True,
-            message=f"Horas trabajadas de todos los trabajadores obtenidas correctamente",
-            data={
-                "fecha_inicio": fecha_inicio,
-                "fecha_fin": fecha_fin,
-                "total_trabajadores": len(trabajadores),
-                "trabajadores": trabajadores
-            }
-        )
-    except Exception as e:
-        return AllWorkersHoursWorkedResponse(
-            success=False,
-            message=f"Error obteniendo horas trabajadas de todos los trabajadores: {str(e)}",
-            data={}
-        )
 
 
 @router.get("/", summary="Listar reportes", tags=["Reportes"], response_model=List[dict])
@@ -427,5 +338,5 @@ def listar_reportes_por_cliente(
     if desde_vista:
         reportes = form_service.get_reportes_view(tipo_reporte, numero, fecha_inicio, fecha_fin, lider_ci)
     else:
-        reportes = form_service.get_reportes(tipo_reporte, numero, fecha_inicio, fecha_fin, lider_ci)
+        reportes = form_service.get_reportes(tipo_reporte, numero, fecha_inicio, fecha_fin, lider_ci, None, None)
     return reportes

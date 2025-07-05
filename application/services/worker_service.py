@@ -25,3 +25,24 @@ class WorkerService:
     async def set_worker_password(self, ci: str, contrasena: str) -> bool:
         return self.worker_repo.set_worker_password(ci, contrasena)
 
+    def get_hours_worked_by_ci(self, ci: str, fecha_inicio: str, fecha_fin: str) -> float:
+        """
+        Obtiene el total de horas trabajadas por una persona dado su CI y rango de fechas.
+        
+        :param ci: Cédula de identidad de la persona
+        :param fecha_inicio: Fecha de inicio del rango (formato: YYYY-MM-DD)
+        :param fecha_fin: Fecha de fin del rango (formato: YYYY-MM-DD)
+        :return: Total de horas trabajadas
+        """
+        return self.worker_repo.get_hours_worked_by_ci(ci, fecha_inicio, fecha_fin)
+
+    def get_all_workers_hours_worked(self, fecha_inicio: str, fecha_fin: str) -> List[dict]:
+        """
+        Obtiene todos los trabajadores con sus horas trabajadas en un rango de fechas específico.
+        
+        :param fecha_inicio: Fecha de inicio del rango (formato: YYYY-MM-DD)
+        :param fecha_fin: Fecha de fin del rango (formato: YYYY-MM-DD)
+        :return: Lista de trabajadores con sus horas trabajadas
+        """
+        return self.worker_repo.get_all_workers_hours_worked(fecha_inicio, fecha_fin)
+
