@@ -1,0 +1,27 @@
+### Obtener todos los reportes
+GET http://localhost:8000/api/reportes
+Accept: application/json
+
+### Obtener reportes filtrando por tipo
+GET http://localhost:8000/api/reportes?tipo_reporte=mantenimiento
+Accept: application/json
+
+### Obtener reportes de un cliente específico
+GET http://localhost:8000/api/reportes/cliente/1300
+Accept: application/json
+
+### Obtener reportes de un cliente desde la vista
+GET http://localhost:8000/api/reportes/cliente/1300?desde_vista=true
+Accept: application/json
+
+### Obtener todos los clientes
+GET http://localhost:8000/api/clientes
+Accept: application/json
+
+### Buscar clientes por nombre
+GET http://localhost:8000/api/clientes?nombre=Juanca
+Accept: application/json
+
+### Buscar clientes por dirección
+GET http://localhost:8000/api/clientes?direccion=rtyt565
+Accept: application/json 

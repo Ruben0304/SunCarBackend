@@ -64,6 +64,13 @@ app.include_router(
     tags=["Brigadas"]
 )
 
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(
+        app,
+        host="127.0.0.1",
+        port=8000
+    )
 app.include_router(
     auth_router,
     prefix="/api/auth",
