@@ -24,7 +24,8 @@ class WorkerRepository:
             for worker_raw in workers_raw:
                 # Transformar _id a id
                 worker_raw["id"] = str(worker_raw.pop("_id"))
-
+                # Determinar si tiene contraseña
+                worker_raw["tiene_contraseña"] = bool(worker_raw.get("contraseña"))
                 # Usar model_validate (Pydantic v2)
                 worker = Trabajador.model_validate(worker_raw)
                 workers.append(worker)

@@ -33,3 +33,9 @@ class FormService:
         :return: Lista de trabajadores con sus horas trabajadas
         """
         return self._form_repository.get_all_workers_hours_worked(fecha_inicio, fecha_fin)
+
+    def get_reportes(self, tipo_reporte=None, cliente_numero=None, fecha_inicio=None, fecha_fin=None, lider_ci=None):
+        return self._form_repository.get_reportes(tipo_reporte, cliente_numero, fecha_inicio, fecha_fin, lider_ci)
+
+    def get_reportes_view(self, tipo_reporte=None, cliente_numero=None, fecha_inicio=None, fecha_fin=None, lider_ci=None):
+        return self._form_repository.get_reportes_view(tipo_reporte, cliente_numero, fecha_inicio, fecha_fin, lider_ci)

@@ -1,7 +1,7 @@
 from http.client import HTTPException
 from typing import List, Optional
 
-from fastapi import APIRouter, Depends, status, HTTPException, File, UploadFile, Form
+from fastapi import APIRouter, Depends, status, HTTPException, File, UploadFile, Form, Query
 from pydantic import BaseModel, Field, ValidationError
 
 from infrastucture.dependencies import get_form_service
@@ -56,15 +56,14 @@ async def get_all_forms() -> List[FormEntity]:
     tags=["Reportes de Inversión"]
 )
 async def create_inversion_report(
-    tipo_reporte: str = Form(...),
-    brigada: str = Form(...),
-    materiales: str = Form(...),
-    cliente: str = Form(...),
-    fecha_hora: str = Form(...),
-    fotos_inicio: list[UploadFile] = File(...),
-    fotos_fin: list[UploadFile] = File(...)
+        tipo_reporte: str = Form(...),
+        brigada: str = Form(...),
+        materiales: str = Form(...),
+        cliente: str = Form(...),
+        fecha_hora: str = Form(...),
+        fotos_inicio: list[UploadFile] = File(...),
+        fotos_fin: list[UploadFile] = File(...)
 ):
-
     try:
         # Parsear los campos JSON
         brigada_dict = json.loads(brigada)
@@ -113,7 +112,7 @@ async def create_inversion_report(
             success=False,
             message=f"Error interno del servidor: {str(e)}",
             data={}
-        ) 
+        )
 
 
 @router.post(
@@ -138,16 +137,15 @@ async def create_inversion_report(
     tags=["Reportes de Avería"]
 )
 async def create_averia_report(
-    tipo_reporte: str = Form(...),
-    brigada: str = Form(...),
-    materiales: str = Form(default="[]"),
-    cliente: str = Form(...),
-    fecha_hora: str = Form(...),
-    descripcion: str = Form(...),
-    fotos_inicio: list[UploadFile] = File(default=[]),
-    fotos_fin: list[UploadFile] = File(default=[])
+        tipo_reporte: str = Form(...),
+        brigada: str = Form(...),
+        materiales: str = Form(default="[]"),
+        cliente: str = Form(...),
+        fecha_hora: str = Form(...),
+        descripcion: str = Form(...),
+        fotos_inicio: list[UploadFile] = File(default=[]),
+        fotos_fin: list[UploadFile] = File(default=[])
 ):
-
     try:
         # Parsear los campos JSON
         brigada_dict = json.loads(brigada)
@@ -158,7 +156,7 @@ async def create_averia_report(
         # Procesar fotos solo si se proporcionan
         fotos_inicio_base64 = []
         fotos_fin_base64 = []
-        
+
         if fotos_inicio:
             fotos_inicio_base64 = await FileBase64Converter.files_to_base64(fotos_inicio)
         if fotos_fin:
@@ -228,16 +226,15 @@ async def create_averia_report(
     tags=["Reportes de Mantenimiento"]
 )
 async def create_mantenimiento_report(
-    tipo_reporte: str = Form(...),
-    brigada: str = Form(...),
-    materiales: str = Form(default="[]"),
-    cliente: str = Form(...),
-    fecha_hora: str = Form(...),
-    descripcion: str = Form(...),
-    fotos_inicio: list[UploadFile] = File(default=[]),
-    fotos_fin: list[UploadFile] = File(default=[])
+        tipo_reporte: str = Form(...),
+        brigada: str = Form(...),
+        materiales: str = Form(default="[]"),
+        cliente: str = Form(...),
+        fecha_hora: str = Form(...),
+        descripcion: str = Form(...),
+        fotos_inicio: list[UploadFile] = File(default=[]),
+        fotos_fin: list[UploadFile] = File(default=[])
 ):
-
     try:
         # Parsear los campos JSON
         brigada_dict = json.loads(brigada)
@@ -248,7 +245,7 @@ async def create_mantenimiento_report(
         # Procesar fotos solo si se proporcionan
         fotos_inicio_base64 = []
         fotos_fin_base64 = []
-        
+
         if fotos_inicio:
             fotos_inicio_base64 = await FileBase64Converter.files_to_base64(fotos_inicio)
         if fotos_fin:
@@ -381,3 +378,48 @@ async def get_all_workers_hours_worked(
             message=f"Error obteniendo horas trabajadas de todos los trabajadores: {str(e)}",
             data={}
         )
+
+
+@router.get("/", summary="Listar reportes", tags=["Reportes"], response_model=List[dict])
+def listar_reportes(
+    tipo_reporte: Optional[str] = Query(None, description="Tipo de reporte (inversion, averia, mantenimiento)"),
+    cliente_numero: Optional[str] = Query(None, description="Número de cliente"),
+    fecha_inicio: Optional[str] = Query(None, description="Fecha inicio (YYYY-MM-DD)"),
+    fecha_fin: Optional[str] = Query(None, description="Fecha fin (YYYY-MM-DD)"),
+    lider_ci: Optional[str] = Query(None, description="CI del líder de brigada"),
+    descripcion: Optional[str] = Query(None, description="Búsqueda parcial en la descripción del reporte"),
+    q: Optional[str] = Query(None, description="Búsqueda global en varios campos: descripción, nombre de cliente, nombre de líder, tipo de reporte, número de cliente"),
+):
+    """Listar reportes de la colección principal con filtros opcionales, incluyendo búsqueda global por 'q'."""
+    reportes = form_service.get_reportes(tipo_reporte, cliente_numero, fecha_inicio, fecha_fin, lider_ci, descripcion, q)
+    return reportes
+
+
+@router.get("/view", summary="Listar reportes desde la vista", tags=["Reportes"], response_model=List[dict])
+def listar_reportes_view(
+    tipo_reporte: Optional[str] = Query(None, description="Tipo de reporte (inversion, averia, mantenimiento)"),
+    cliente_numero: Optional[str] = Query(None, description="Número de cliente"),
+    fecha_inicio: Optional[str] = Query(None, description="Fecha inicio (YYYY-MM-DD)"),
+    fecha_fin: Optional[str] = Query(None, description="Fecha fin (YYYY-MM-DD)"),
+    lider_ci: Optional[str] = Query(None, description="CI del líder de brigada"),
+):
+    """Listar reportes desde la vista reportes_view con filtros opcionales."""
+    reportes = form_service.get_reportes_view(tipo_reporte, cliente_numero, fecha_inicio, fecha_fin, lider_ci)
+    return reportes
+
+
+@router.get("/cliente/{numero}", summary="Listar reportes de un cliente", tags=["Reportes"], response_model=List[dict])
+def listar_reportes_por_cliente(
+    numero: str,
+    desde_vista: Optional[bool] = Query(False, description="Si es True, consulta la vista reportes_view"),
+    tipo_reporte: Optional[str] = Query(None, description="Filtrar por tipo de reporte (opcional)"),
+    fecha_inicio: Optional[str] = Query(None, description="Fecha inicio (YYYY-MM-DD)"),
+    fecha_fin: Optional[str] = Query(None, description="Fecha fin (YYYY-MM-DD)"),
+    lider_ci: Optional[str] = Query(None, description="CI del líder de brigada (opcional)"),
+):
+    """Listar todos los reportes de un cliente (de cualquier tipo)."""
+    if desde_vista:
+        reportes = form_service.get_reportes_view(tipo_reporte, numero, fecha_inicio, fecha_fin, lider_ci)
+    else:
+        reportes = form_service.get_reportes(tipo_reporte, numero, fecha_inicio, fecha_fin, lider_ci)
+    return reportes

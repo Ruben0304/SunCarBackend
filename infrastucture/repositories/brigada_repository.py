@@ -3,6 +3,7 @@ from bson import ObjectId
 from pydantic import ValidationError
 from pymongo.errors import PyMongoError
 import logging
+from bson.errors import InvalidId
 
 from domain.entities.brigada import Brigada
 from domain.entities.trabajador import Trabajador
@@ -44,17 +45,20 @@ class BrigadaRepository:
             # Transformar _id a id para el líder
             lider_raw = brigada_raw["lider"]
             lider_raw["id"] = str(lider_raw.pop("_id"))
+            lider_raw["tiene_contraseña"] = bool(lider_raw.get("contraseña"))
             lider = Trabajador.model_validate(lider_raw)
             
             # Transformar _id a id para todos los integrantes
             integrantes = []
             for integrante_raw in brigada_raw.get("integrantes", []):
                 integrante_raw["id"] = str(integrante_raw.pop("_id"))
+                integrante_raw["tiene_contraseña"] = self._get_tiene_contraseña(integrante_raw["CI"])
                 integrante = Trabajador.model_validate(integrante_raw)
                 integrantes.append(integrante)
             
             # Crear y retornar la brigada completa
             brigada = Brigada(
+                id=str(brigada_raw["_id"]) if "_id" in brigada_raw else brigada_raw.get("lider_ci"),
                 lider_ci=brigada_raw["lider_ci"],
                 lider=lider, 
                 integrantes=integrantes
@@ -94,17 +98,20 @@ class BrigadaRepository:
                 # Transformar _id a id para el líder
                 lider_raw = brigada_raw["lider"]
                 lider_raw["id"] = str(lider_raw.pop("_id"))
+                lider_raw["tiene_contraseña"] = bool(lider_raw.get("contraseña"))
                 lider = Trabajador.model_validate(lider_raw)
                 
                 # Transformar _id a id para todos los integrantes
                 integrantes = []
                 for integrante_raw in brigada_raw.get("integrantes", []):
                     integrante_raw["id"] = str(integrante_raw.pop("_id"))
+                    integrante_raw["tiene_contraseña"] = self._get_tiene_contraseña(integrante_raw["CI"])
                     integrante = Trabajador.model_validate(integrante_raw)
                     integrantes.append(integrante)
                 
                 # Crear la brigada
                 brigada = Brigada(
+                    id=str(brigada_raw["_id"]) if "_id" in brigada_raw else brigada_raw.get("lider_ci"),
                     lider_ci=brigada_raw["lider_ci"],
                     lider=lider, 
                     integrantes=integrantes
@@ -148,17 +155,20 @@ class BrigadaRepository:
                 # Transformar _id a id para el líder
                 lider_raw = brigada_raw["lider"]
                 lider_raw["id"] = str(lider_raw.pop("_id"))
+                lider_raw["tiene_contraseña"] = bool(lider_raw.get("contraseña"))
                 lider = Trabajador.model_validate(lider_raw)
                 
                 # Transformar _id a id para todos los integrantes
                 integrantes = []
                 for integrante_raw in brigada_raw.get("integrantes", []):
                     integrante_raw["id"] = str(integrante_raw.pop("_id"))
+                    integrante_raw["tiene_contraseña"] = self._get_tiene_contraseña(integrante_raw["CI"])
                     integrante = Trabajador.model_validate(integrante_raw)
                     integrantes.append(integrante)
                 
                 # Crear la brigada
                 brigada = Brigada(
+                    id=str(brigada_raw["_id"]) if "_id" in brigada_raw else brigada_raw.get("lider_ci"),
                     lider_ci=brigada_raw["lider_ci"],
                     lider=lider, 
                     integrantes=integrantes
@@ -208,7 +218,16 @@ class BrigadaRepository:
         Agrega un trabajador a la lista de integrantes de una brigada.
         """
         collection = get_collection("brigadas")
-        result = collection.update_one({"_id": ObjectId(brigada_id)}, {"$addToSet": {"integrantes": trabajador_ci}})
+        # Intentar usar como ObjectId
+        try:
+            obj_id = ObjectId(brigada_id)
+            result = collection.update_one({"_id": obj_id}, {"$addToSet": {"integrantes": trabajador_ci}})
+            if result.modified_count > 0:
+                return True
+        except (InvalidId, TypeError):
+            pass
+        # Si no es ObjectId válido, buscar por lider_ci
+        result = collection.update_one({"lider": brigada_id}, {"$addToSet": {"integrantes": trabajador_ci}})
         return result.modified_count > 0
 
     def remove_trabajador(self, brigada_id: str, trabajador_ci: str) -> bool:
@@ -226,3 +245,8 @@ class BrigadaRepository:
         collection = get_collection("trabajadores")
         result = collection.update_one({"CI": trabajador_ci}, {"$set": {"nombre": nombre}})
         return result.modified_count > 0
+
+    def _get_tiene_contraseña(self, ci: str) -> bool:
+        collection = get_collection("trabajadores")
+        worker = collection.find_one({"CI": ci})
+        return bool(worker and worker.get("contraseña"))

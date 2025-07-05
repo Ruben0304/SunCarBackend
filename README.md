@@ -62,3 +62,58 @@ Todo se configura y se inyecta a FastAPI en `infrastructure/dependencies.py`.
 
 Cualquier cosa, preguntame. ¡Vamos paso a paso! 🚀
 
+## Endpoints GET añadidos para reportes y clientes
+
+### Listar reportes (colección principal)
+`GET /api/reportes`
+
+**Parámetros opcionales:**
+- `tipo_reporte`: Filtra por tipo (inversion, averia, mantenimiento)
+- `cliente_numero`: Filtra por número de cliente
+- `fecha_inicio`, `fecha_fin`: Filtra por rango de fechas (YYYY-MM-DD)
+- `lider_ci`: Filtra por CI del líder de brigada
+
+**Ejemplo:**
+```
+GET /api/reportes?tipo_reporte=inversion&cliente_numero=1400
+```
+
+### Listar reportes (vista reportes_view)
+`GET /api/reportes/view`
+
+Mismos parámetros que el anterior, pero consulta la vista agregada en MongoDB.
+
+**Ejemplo:**
+```
+GET /api/reportes/view?fecha_inicio=2025-07-01&fecha_fin=2025-07-31
+```
+
+### Listar clientes
+`GET /api/clientes`
+
+**Parámetros opcionales:**
+- `numero`: Filtra por número exacto
+- `nombre`: Búsqueda parcial por nombre (case-insensitive)
+- `direccion`: Búsqueda parcial por dirección
+
+**Ejemplo:**
+```
+GET /api/clientes?nombre=Juanca
+```
+
+### Listar todos los reportes de un cliente
+`GET /api/reportes/cliente/{numero}`
+
+**Parámetros opcionales:**
+- `desde_vista`: Si es true, consulta la vista agregada `reportes_view` (por defecto consulta la colección principal)
+- `tipo_reporte`: Filtra por tipo de reporte (inversion, averia, mantenimiento)
+- `fecha_inicio`, `fecha_fin`: Filtra por rango de fechas (YYYY-MM-DD)
+- `lider_ci`: Filtra por CI del líder de brigada
+
+**Ejemplo:**
+```
+GET /api/reportes/cliente/1400?tipo_reporte=inversion&fecha_inicio=2025-07-01&fecha_fin=2025-07-31
+```
+
+Todos los endpoints devuelven la estructura completa de cada entidad, incluyendo los campos particulares según el tipo de reporte.
+
