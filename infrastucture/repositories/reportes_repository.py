@@ -337,7 +337,6 @@ class FormRepository:
                     "$group": {
                         "_id": "$todos_trabajadores._id",
                         "nombre": {"$first": "$todos_trabajadores.nombre"},
-                        "apellido": {"$first": "$todos_trabajadores.apellido"},
                         "total_horas": {"$sum": "$todos_trabajadores.total_horas"}
                     }
                 },
@@ -346,7 +345,6 @@ class FormRepository:
                         "_id": 0,
                         "ci": "$_id",
                         "nombre": 1,
-                        "apellido": 1,
                         "total_horas": {"$round": ["$total_horas", 2]}
                     }
                 },
