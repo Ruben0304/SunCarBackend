@@ -29,10 +29,10 @@ form_service = Depends(get_form_service)
 
 
 
-@router.get("/", response_model=List[FormEntity])
-async def get_all_forms() -> List[FormEntity]:
-    forms = await form_service.get_all_forms()
-    return forms
+# @router.get("/", response_model=List[FormEntity])
+# async def get_all_forms() -> List[FormEntity]:
+#     forms = await form_service.get_all_forms()
+#     return forms
 
 
 @router.post(
