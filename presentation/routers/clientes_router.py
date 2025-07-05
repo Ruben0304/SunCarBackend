@@ -29,6 +29,18 @@ async def crear_cliente(
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@router.get("/", summary="Listar clientes", tags=["Clientes"], response_model=List[dict])
+def listar_clientes(
+    numero: Optional[str] = Query(None, description="Número de cliente"),
+    nombre: Optional[str] = Query(None, description="Nombre del cliente (búsqueda parcial)"),
+    direccion: Optional[str] = Query(None, description="Dirección del cliente (búsqueda parcial)"),
+    client_service: ClientService = Depends(get_client_service)
+):
+    """Listar clientes con filtros opcionales."""
+    clientes = client_service.get_clientes(numero, nombre, direccion)
+    return clientes
+
+
 @router.get("/{numero}/verificar", response_model=ClienteVerifyResponse)
 async def verificar_cliente_por_numero(
     numero: str,
