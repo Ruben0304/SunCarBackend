@@ -1,7 +1,7 @@
 from http.client import HTTPException
 from typing import List
 
-from fastapi import APIRouter, Depends, Body, Query
+from fastapi import APIRouter, Depends, Body, Query, HTTPException
 from pydantic import BaseModel
 
 from application.services.worker_service import WorkerService
@@ -23,6 +23,7 @@ class TrabajadorCreateRequest(BaseModel):
     ci: str
     nombre: str
     contrasena: str = None
+    integrantes: list = None
 
 
 class TrabajadorBrigadaRequest(BaseModel):
@@ -96,7 +97,6 @@ async def buscar_trabajadores(
 @router.post("/jefes_brigada", response_model=TrabajadorCreateResponse)
 async def crear_jefe_brigada(
     request: TrabajadorCreateRequest,
-    integrantes: list = Body(default=None),
     worker_service: WorkerService = Depends(get_worker_service)
 ):
     """
@@ -107,7 +107,7 @@ async def crear_jefe_brigada(
             request.ci, 
             request.nombre, 
             request.contrasena, 
-            integrantes
+            request.integrantes
         )
         return TrabajadorCreateResponse(
             success=True,

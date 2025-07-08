@@ -46,3 +46,17 @@ class WorkerService:
         """
         return self.worker_repo.get_all_workers_hours_worked(fecha_inicio, fecha_fin)
 
+    async def convert_worker_to_leader(self, ci: str, contrasena: str = None, integrantes: list = None) -> bool:
+        """
+        Convierte un trabajador existente en jefe de brigada:
+        - Si no tiene contraseña, se la asigna.
+        - Si se pasan integrantes, crea/actualiza la brigada con este trabajador como líder.
+        """
+        return await self.worker_repo.convert_worker_to_leader(ci, contrasena, integrantes)
+
+    async def create_brigada_leader(self, ci: str, nombre: str, contrasena: str = None, integrantes: list = None) -> str:
+        """
+        Crea un trabajador (opcionalmente con contraseña) y, si se pasan integrantes, crea la brigada con este trabajador como líder.
+        """
+        return await self.worker_repo.create_brigada_leader(ci, nombre, contrasena, integrantes)
+

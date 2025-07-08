@@ -117,3 +117,93 @@ GET /api/reportes/cliente/1400?tipo_reporte=inversion&fecha_inicio=2025-07-01&fe
 
 Todos los endpoints devuelven la estructura completa de cada entidad, incluyendo los campos particulares según el tipo de reporte.
 
+
+### Obtener horas trabajadas de un trabajador
+`GET /api/trabajadores/horas-trabajadas/{ci}`
+
+**Parámetros requeridos:**
+- `ci`: Cédula de identidad del trabajador (en la URL)
+- `fecha_inicio`: Fecha de inicio del rango (query param, formato `YYYY-MM-DD`)
+- `fecha_fin`: Fecha de fin del rango (query param, formato `YYYY-MM-DD`)
+
+**Descripción:**
+Devuelve el total de horas trabajadas por el trabajador especificado en el rango de fechas, incluyendo el detalle de actividades.
+
+**Ejemplo:**
+```
+GET /api/trabajadores/horas-trabajadas/12345678?fecha_inicio=2024-01-01&fecha_fin=2024-01-31
+```
+
+**Respuesta exitosa:**
+```json
+{
+  "success": true,
+  "message": "Horas trabajadas obtenidas correctamente para CI 12345678",
+  "data": {
+    "ci": "12345678",
+    "fecha_inicio": "2024-01-01",
+    "fecha_fin": "2024-01-31",
+    "total_horas": 160.5,
+    "actividades": [
+      {
+        "fecha": "2024-01-15",
+        "hora_inicio": "08:00",
+        "hora_fin": "17:00",
+        "tipo_reporte": "inversion",
+        "horas_trabajadas": 9.0
+      }
+    ]
+  }
+}
+```
+
+---
+
+### Obtener horas trabajadas de todos los trabajadores
+`GET /api/trabajadores/horas-trabajadas-todos`
+
+**Parámetros requeridos:**
+- `fecha_inicio`: Fecha de inicio del rango (query param, formato `YYYY-MM-DD`)
+- `fecha_fin`: Fecha de fin del rango (query param, formato `YYYY-MM-DD`)
+
+**Descripción:**
+Devuelve una lista con el total de horas trabajadas de todos los trabajadores en el rango de fechas, ordenados de mayor a menor.
+
+**Ejemplo:**
+```
+GET /api/trabajadores/horas-trabajadas-todos?fecha_inicio=2024-01-01&fecha_fin=2024-01-31
+```
+
+**Respuesta exitosa:**
+```json
+{
+  "success": true,
+  "message": "Horas trabajadas de todos los trabajadores obtenidas correctamente",
+  "data": {
+    "fecha_inicio": "2024-01-01",
+    "fecha_fin": "2024-01-31",
+    "total_trabajadores": 3,
+    "trabajadores": [
+      {
+        "ci": "12345678",
+        "nombre": "Juan",
+        "apellido": "Pérez",
+        "total_horas": 160.5
+      },
+      {
+        "ci": "87654321",
+        "nombre": "María",
+        "apellido": "García",
+        "total_horas": 145.0
+      },
+      {
+        "ci": "11223344",
+        "nombre": "Carlos",
+        "apellido": "López",
+        "total_horas": 132.75
+      }
+    ]
+  }
+}
+```
+

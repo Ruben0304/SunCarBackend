@@ -315,3 +315,60 @@ class WorkerRepository:
         except Exception as e:
             logger.error(f"❌ Error obteniendo horas trabajadas de todos los trabajadores: {e}")
             raise Exception(f"Error obteniendo horas trabajadas de todos los trabajadores: {str(e)}")
+
+    async def convert_worker_to_leader(self, ci: str, contrasena: str = None, integrantes: list = None) -> bool:
+        """
+        Convierte un trabajador existente en jefe de brigada:
+        - Si no tiene contraseña, se la asigna.
+        - Si se pasan integrantes, crea/actualiza la brigada con este trabajador como líder.
+        """
+        from infrastucture.repositories.brigada_repository import BrigadaRepository
+        collection = get_collection(self.collection_name)
+        worker = collection.find_one({"CI": ci})
+        if not worker:
+            return False
+        # Asignar contraseña si no la tiene y se provee
+        if contrasena and not worker.get("contraseña"):
+            collection.update_one({"CI": ci}, {"$set": {"contraseña": contrasena}})
+        # Si se pasan integrantes, crear/actualizar brigada
+        if integrantes is not None:
+            brigada_repo = BrigadaRepository()
+            # El método update_brigada espera el id de la brigada (CI del líder), el CI del líder y los CI de los integrantes
+            integrantes_ci = [i["CI"] if isinstance(i, dict) and "CI" in i else i for i in integrantes]
+            # Si ya existe la brigada, actualizarla; si no, crearla
+            brigada = brigada_repo.get_brigada_by_lider_ci(ci)
+            if brigada:
+                brigada_repo.update_brigada(ci, ci, integrantes_ci)
+            else:
+                brigada_repo.create_brigada(ci, integrantes_ci)
+        return True
+
+    async def create_brigada_leader(self, ci: str, nombre: str, contrasena: str = None, integrantes: list = None) -> str:
+        """
+        Crea un trabajador (opcionalmente con contraseña) y, si se pasan integrantes, crea la brigada con este trabajador como líder.
+        """
+        from infrastucture.repositories.brigada_repository import BrigadaRepository
+        collection = get_collection(self.collection_name)
+        # Verificar si el trabajador ya existe
+        worker = collection.find_one({"CI": ci})
+        if not worker:
+            data = {"CI": ci, "nombre": nombre}
+            if contrasena:
+                data["contraseña"] = contrasena
+            result = collection.insert_one(data)
+        else:
+            # Si ya existe, actualizar nombre y contraseña si se proveen
+            update_data = {"nombre": nombre}
+            if contrasena:
+                update_data["contraseña"] = contrasena
+            collection.update_one({"CI": ci}, {"$set": update_data})
+        # Si se pasan integrantes, crear la brigada
+        if integrantes is not None:
+            brigada_repo = BrigadaRepository()
+            integrantes_ci = [i["CI"] if isinstance(i, dict) and "CI" in i else i for i in integrantes]
+            brigada = brigada_repo.get_brigada_by_lider_ci(ci)
+            if brigada:
+                brigada_repo.update_brigada(ci, ci, integrantes_ci)
+            else:
+                brigada_repo.create_brigada(ci, integrantes_ci)
+        return str(ci)
