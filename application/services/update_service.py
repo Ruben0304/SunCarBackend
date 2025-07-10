@@ -20,7 +20,7 @@ class UpdateService:
         # Configuración de versiones de app (en producción esto vendría de una BD o config)
         self.app_versions = {
             "android": {
-                "latest_version": "1.2.0",
+                "latest_version": "1.0.0",
                 "download_url": "https://example.com/app-v1.2.0.apk",
                 "file_size": 15728640,  # 15MB
                 "changelog": "Nuevas funcionalidades y correcciones de bugs",

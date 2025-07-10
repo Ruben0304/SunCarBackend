@@ -74,7 +74,7 @@ app.include_router(
 
 app.include_router(
     updates_router,
-    prefix="/api/updates",
+    prefix="/api/update",
     tags=["Actualizaciones"]
 )
 

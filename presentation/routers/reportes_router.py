@@ -306,7 +306,7 @@ def listar_reportes(
     form_service: FormService = Depends(get_form_service)
 ):
     """Listar reportes de la colección principal con filtros opcionales, incluyendo búsqueda global por 'q'."""
-    reportes = form_service.get_reportes(tipo_reporte, cliente_numero, fecha_inicio, fecha_fin, lider_ci, descripcion, q)
+    reportes = form_service.get_reportes_view(tipo_reporte, cliente_numero, fecha_inicio, fecha_fin, lider_ci)
     return reportes
 
 
@@ -340,3 +340,15 @@ def listar_reportes_por_cliente(
     else:
         reportes = form_service.get_reportes(tipo_reporte, numero, fecha_inicio, fecha_fin, lider_ci, None, None)
     return reportes
+
+
+@router.get("/{reporte_id}", summary="Obtener reporte por ID", tags=["Reportes"], response_model=dict)
+def obtener_reporte_por_id(
+    reporte_id: str,
+    form_service: FormService = Depends(get_form_service)
+):
+    """Obtener los datos de un reporte por su ID."""
+    reporte = form_service.get_reporte_by_id(reporte_id)
+    if not reporte:
+        raise HTTPException(status_code=404, detail="Reporte no encontrado")
+    return reporte

@@ -173,3 +173,19 @@ class FormRepository:
             reportes.append(doc)
         return reportes
 
+    def get_reporte_by_id(self, reporte_id: str) -> dict:
+        """
+        Obtiene un reporte por su ID.
+        """
+        collection = get_collection(self.collection_name)
+        from bson import ObjectId
+        try:
+            doc = collection.find_one({"_id": ObjectId(reporte_id)})
+            if not doc:
+                return None
+            doc["id"] = str(doc.pop("_id"))
+            return doc
+        except Exception as e:
+            logger.error(f"❌ Error obteniendo reporte por id: {e}")
+            raise Exception(f"Error obteniendo reporte por id: {str(e)}")
+
