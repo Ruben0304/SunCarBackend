@@ -21,7 +21,7 @@ async def crear_cliente(
     Crear un nuevo cliente con información completa.
     """
     try:
-        cliente = await client_service.create_client(cliente_request)
+        cliente = await client_service.create_or_update_client(cliente_request)
         return ClienteCreateResponse(
             success=True,
             message="Cliente creado exitosamente",

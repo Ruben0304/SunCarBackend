@@ -2,12 +2,14 @@ from infrastucture.database.mongo_db.connection import get_collection
 from domain.entities.cliente import Cliente
 from typing import Optional
 
+from presentation.schemas.requests.ClienteCreateRequest import ClienteCreateRequest
+
 
 class ClientRepository:
     def __init__(self):
         self.collection_name = "clientes"
 
-    async def create_or_update_client(self, cliente: Cliente) -> Cliente:
+    async def create_or_update_client(self, cliente: ClienteCreateRequest) -> ClienteCreateRequest:
         """
         Crear un nuevo cliente o actualizar si ya existe basado en el número de cliente.
         Usa upsert de MongoDB para hacer insert or update en una sola operación.
