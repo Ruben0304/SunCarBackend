@@ -27,7 +27,7 @@ def crear_cliente(
         return ClienteCreateResponse(
             success=True,
             message="Cliente creado exitosamente",
-            data=cliente
+            data=cliente.model_dump()  # <-- FIX: devolver dict
         )
     except Exception as e:
         logger.error(f"Error en crear_cliente: {e}", exc_info=True)
@@ -90,7 +90,7 @@ def crear_cliente_simple(
         return ClienteCreateResponse(
             success=True,
             message="Cliente simple creado exitosamente",
-            data=cliente
+            data=cliente.model_dump()  # <-- FIX: devolver dict
         )
     except Exception as e:
         logger.error(f"Error en crear_cliente_simple: {e}", exc_info=True)
