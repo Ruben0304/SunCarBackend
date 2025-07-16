@@ -372,3 +372,31 @@ class WorkerRepository:
             else:
                 brigada_repo.create_brigada(ci, integrantes_ci)
         return str(ci)
+
+    def delete_worker_by_ci(self, ci: str) -> bool:
+        """
+        Elimina un trabajador de la colección por su CI.
+        """
+        try:
+            collection = get_collection(self.collection_name)
+            result = collection.delete_one({"CI": ci})
+            return result.deleted_count > 0
+        except Exception as e:
+            logger.error(f"❌ Error eliminando trabajador con CI {ci}: {e}")
+            raise Exception(f"Error eliminando trabajador con CI {ci}: {str(e)}")
+
+    def update_worker_data(self, ci: str, nombre: str, nuevo_ci: str = None) -> bool:
+        """
+        Actualiza los datos de un trabajador (nombre y opcionalmente CI).
+        """
+        try:
+            collection = get_collection(self.collection_name)
+            update_data = {"nombre": nombre}
+            if nuevo_ci:
+                update_data["CI"] = nuevo_ci
+            
+            result = collection.update_one({"CI": ci}, {"$set": update_data})
+            return result.modified_count > 0
+        except Exception as e:
+            logger.error(f"❌ Error actualizando datos del trabajador con CI {ci}: {e}")
+            raise Exception(f"Error actualizando datos del trabajador con CI {ci}: {str(e)}")

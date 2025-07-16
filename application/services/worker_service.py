@@ -4,11 +4,13 @@ from fastapi import Depends
 
 from domain.entities.trabajador import Trabajador
 from infrastucture.repositories.trabajadores_repository import WorkerRepository
+from infrastucture.repositories.brigada_repository import BrigadaRepository
 
 
 class WorkerService:
-    def __init__(self, worker_repo: WorkerRepository):
+    def __init__(self, worker_repo: WorkerRepository, brigada_repo: BrigadaRepository = None):
         self.worker_repo = worker_repo
+        self.brigada_repo = brigada_repo or BrigadaRepository()
 
     async def get_all_workers(self) -> List[Trabajador]:
         """
@@ -59,4 +61,22 @@ class WorkerService:
         Crea un trabajador (opcionalmente con contraseña) y, si se pasan integrantes, crea la brigada con este trabajador como líder.
         """
         return await self.worker_repo.create_brigada_leader(ci, nombre, contrasena, integrantes)
+
+    async def delete_worker_by_ci(self, ci: str) -> bool:
+        """
+        Elimina un trabajador por su CI.
+        """
+        return self.worker_repo.delete_worker_by_ci(ci)
+
+    async def update_worker_data(self, ci: str, nombre: str, nuevo_ci: str = None) -> bool:
+        """
+        Actualiza los datos de un trabajador (nombre y opcionalmente CI).
+        """
+        return self.worker_repo.update_worker_data(ci, nombre, nuevo_ci)
+
+    async def remove_worker_from_brigada(self, brigada_id: str, trabajador_ci: str) -> bool:
+        """
+        Elimina un trabajador de una brigada específica.
+        """
+        return self.brigada_repo.remove_trabajador(brigada_id, trabajador_ci)
 

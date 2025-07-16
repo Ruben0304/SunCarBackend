@@ -126,16 +126,16 @@ async def editar_brigada(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.delete("/{brigada_id}", response_model=BrigadaDeleteResponse)
+@router.delete("/{lider_ci}", response_model=BrigadaDeleteResponse)
 async def eliminar_brigada(
-        brigada_id: str,
+        lider_ci: str,
         brigada_repo: BrigadaRepository = Depends(get_brigada_repository)
 ):
     """
-    Eliminar una brigada.
+    Eliminar una brigada usando el CI del líder.
     """
     try:
-        ok = brigada_repo.delete_brigada(brigada_id)
+        ok = brigada_repo.delete_brigada_by_lider_ci(lider_ci)
         if not ok:
             return BrigadaDeleteResponse(
                 success=False,
@@ -175,17 +175,17 @@ async def agregar_trabajador(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.delete("/{brigada_id}/trabajadores/{trabajador_ci}", response_model=BrigadaMemberResponse)
+@router.delete("/{lider_ci}/trabajadores/{trabajador_ci}", response_model=BrigadaMemberResponse)
 async def eliminar_trabajador(
-        brigada_id: str,
+        lider_ci: str,
         trabajador_ci: str,
         brigada_repo: BrigadaRepository = Depends(get_brigada_repository)
 ):
     """
-    Eliminar un trabajador de una brigada.
+    Eliminar un trabajador de una brigada usando el CI del líder.
     """
     try:
-        ok = brigada_repo.remove_trabajador(brigada_id, trabajador_ci)
+        ok = brigada_repo.remove_trabajador_by_lider_ci(lider_ci, trabajador_ci)
         if not ok:
             return BrigadaMemberResponse(
                 success=False,

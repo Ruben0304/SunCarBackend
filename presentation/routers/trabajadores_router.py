@@ -1,11 +1,12 @@
 from http.client import HTTPException
 from typing import List
 
-from fastapi import APIRouter, Depends, Body, Query, HTTPException
+from fastapi import APIRouter, Depends, Body, Query, HTTPException, Path
 from pydantic import BaseModel
 
 from application.services.worker_service import WorkerService
-from infrastucture.dependencies import get_worker_service
+from infrastucture.dependencies import get_worker_service, get_brigada_service
+from application.services.brigada_service import BrigadaService
 from domain.entities.trabajador import Trabajador
 from presentation.schemas.responses import (
     TrabajadorListResponse,
@@ -36,6 +37,11 @@ class TrabajadorBrigadaRequest(BaseModel):
 class ConvertirJefeRequest(BaseModel):
     contrasena: str
     integrantes: list = None
+
+
+class TrabajadorUpdateRequest(BaseModel):
+    nombre: str
+    nuevo_ci: str = None
 
 
 @router.get("/", response_model=TrabajadorListResponse)
@@ -257,3 +263,59 @@ async def get_all_workers_hours_worked(
             message=f"Error obteniendo horas trabajadas de todos los trabajadores: {str(e)}",
             data={}
         ) 
+
+
+@router.put("/{ci}")
+async def actualizar_trabajador(
+    ci: str = Path(..., description="Cédula de identidad del trabajador a actualizar"),
+    request: TrabajadorUpdateRequest = Body(...),
+    worker_service: WorkerService = Depends(get_worker_service)
+):
+    """
+    Actualiza los datos de un trabajador (nombre y opcionalmente CI).
+    """
+    try:
+        actualizado = await worker_service.update_worker_data(ci, request.nombre, request.nuevo_ci)
+        if actualizado:
+            return {"success": True, "message": f"Trabajador con CI {ci} actualizado exitosamente."}
+        else:
+            raise HTTPException(status_code=404, detail=f"Trabajador con CI {ci} no encontrado.")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.delete("/{ci}/brigada/{brigada_id}")
+async def eliminar_trabajador_de_brigada(
+    ci: str = Path(..., description="Cédula de identidad del trabajador"),
+    brigada_id: str = Path(..., description="ID de la brigada"),
+    worker_service: WorkerService = Depends(get_worker_service)
+):
+    """
+    Elimina un trabajador de una brigada específica.
+    """
+    try:
+        eliminado = await worker_service.remove_worker_from_brigada(brigada_id, ci)
+        if eliminado:
+            return {"success": True, "message": f"Trabajador con CI {ci} eliminado de la brigada exitosamente."}
+        else:
+            raise HTTPException(status_code=404, detail="Trabajador o brigada no encontrados.")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.delete("/{ci}")
+async def eliminar_trabajador(
+    ci: str = Path(..., description="Cédula de identidad del trabajador a eliminar"),
+    worker_service: WorkerService = Depends(get_worker_service)
+):
+    """
+    Elimina un trabajador dado su CI.
+    """
+    try:
+        eliminado = await worker_service.delete_worker_by_ci(ci)
+        if eliminado:
+            return {"success": True, "message": f"Trabajador con CI {ci} eliminado exitosamente."}
+        else:
+            raise HTTPException(status_code=404, detail=f"Trabajador con CI {ci} no encontrado.")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e)) 

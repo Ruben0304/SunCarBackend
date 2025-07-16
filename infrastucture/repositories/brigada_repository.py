@@ -213,6 +213,14 @@ class BrigadaRepository:
         result = collection.delete_one({"_id": ObjectId(brigada_id)})
         return result.deleted_count > 0
 
+    def delete_brigada_by_lider_ci(self, lider_ci: str) -> bool:
+        """
+        Elimina una brigada por el CI del líder en la colección base.
+        """
+        collection = get_collection("brigadas")
+        result = collection.delete_one({"lider": lider_ci})
+        return result.deleted_count > 0
+
     def add_trabajador(self, brigada_id: str, trabajador_ci: str) -> bool:
         """
         Agrega un trabajador a la lista de integrantes de una brigada.
@@ -236,6 +244,14 @@ class BrigadaRepository:
         """
         collection = get_collection("brigadas")
         result = collection.update_one({"_id": ObjectId(brigada_id)}, {"$pull": {"integrantes": trabajador_ci}})
+        return result.modified_count > 0
+
+    def remove_trabajador_by_lider_ci(self, lider_ci: str, trabajador_ci: str) -> bool:
+        """
+        Elimina un trabajador de la lista de integrantes de una brigada usando el CI del líder.
+        """
+        collection = get_collection("brigadas")
+        result = collection.update_one({"lider": lider_ci}, {"$pull": {"integrantes": trabajador_ci}})
         return result.modified_count > 0
 
     def update_trabajador(self, trabajador_ci: str, nombre: str) -> bool:

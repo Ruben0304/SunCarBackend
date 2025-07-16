@@ -181,4 +181,16 @@ Content-Type: application/json
     ]
 }
 
-### 
+###
+
+### Eliminar una brigada
+DELETE http://127.0.0.1:8000/api/brigadas/68683d7b39740b6daadb0143
+
+### Eliminar trabajador de brigada
+DELETE http://127.0.0.1:8000/api/brigadas/685aa9ff1823a41af64b1628/trabajadores/23456789
+
+### Obtener todas las brigadas
+GET http://127.0.0.1:8000/api/brigadas/
+
+### Obtener todos los trabajadores
+GET http://127.0.0.1:8000/api/trabajadores/
