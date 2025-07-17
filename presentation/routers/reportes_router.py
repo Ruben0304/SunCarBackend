@@ -58,7 +58,7 @@ async def create_inversion_report(
         fecha_hora: str = Form(...),
         fotos_inicio: list[UploadFile] = File(...),
         fotos_fin: list[UploadFile] = File(...),
-        firma_cliente: UploadFile = File(...),
+        firma_cliente: UploadFile = File(None),
         form_service: FormService = Depends(get_form_service)
 ):
     try:
@@ -70,13 +70,13 @@ async def create_inversion_report(
 
         fotos_inicio_base64 = await FileBase64Converter.files_to_base64(fotos_inicio)
         fotos_fin_base64 = await FileBase64Converter.files_to_base64(fotos_fin)
-        firma_cliente_base64 = (await FileBase64Converter.files_to_base64([firma_cliente]))[0]
-
         adjuntos = {
             "fotos_inicio": fotos_inicio_base64,
-            "fotos_fin": fotos_fin_base64,
-            "firma_cliente": firma_cliente_base64
+            "fotos_fin": fotos_fin_base64
         }
+        if firma_cliente:
+            firma_cliente_base64 = (await FileBase64Converter.files_to_base64([firma_cliente]))[0]
+            adjuntos["firma_cliente"] = firma_cliente_base64
 
         request_data = {
             "tipo_reporte": tipo_reporte,
