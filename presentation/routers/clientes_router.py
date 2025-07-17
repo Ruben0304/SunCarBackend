@@ -1,4 +1,5 @@
 from typing import Optional, List
+import logging
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel
@@ -10,10 +11,11 @@ from presentation.schemas.requests.ClienteCreateRequest import ClienteCreateRequ
 from presentation.schemas.responses import ClienteCreateResponse, ClienteVerifyResponse
 
 router = APIRouter()
+logger = logging.getLogger(__name__)
 
 
 @router.post("/", response_model=ClienteCreateResponse)
-async def crear_cliente(
+def crear_cliente(
     cliente_request: ClienteCreateRequest,
     client_service: ClientService = Depends(get_client_service)
 ):
@@ -21,13 +23,14 @@ async def crear_cliente(
     Crear un nuevo cliente con información completa.
     """
     try:
-        cliente = await client_service.create_client(cliente_request)
+        cliente = client_service.create_or_update_client(cliente_request)
         return ClienteCreateResponse(
             success=True,
             message="Cliente creado exitosamente",
-            data=cliente
+            data=cliente.model_dump()  # <-- FIX: devolver dict
         )
     except Exception as e:
+        logger.error(f"Error en crear_cliente: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -39,12 +42,16 @@ def listar_clientes(
     client_service: ClientService = Depends(get_client_service)
 ):
     """Listar clientes con filtros opcionales."""
-    clientes = client_service.get_clientes(numero, nombre, direccion)
-    return clientes
+    try:
+        clientes = client_service.get_clientes(numero, nombre, direccion)
+        return clientes
+    except Exception as e:
+        logger.error(f"Error en listar_clientes: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.get("/{numero}/verificar", response_model=ClienteVerifyResponse)
-async def verificar_cliente_por_numero(
+def verificar_cliente_por_numero(
     numero: str,
     client_service: ClientService = Depends(get_client_service)
 ):
@@ -52,7 +59,7 @@ async def verificar_cliente_por_numero(
     Verificar si existe un cliente por número.
     """
     try:
-        cliente_info = await client_service.verify_client_by_number(numero)
+        cliente_info = client_service.verify_client_by_number(numero)
         if cliente_info:
             return ClienteVerifyResponse(
                 success=True,
@@ -66,11 +73,12 @@ async def verificar_cliente_por_numero(
                 data=None
             )
     except Exception as e:
+        logger.error(f"Error en verificar_cliente_por_numero: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.post("/simple", response_model=ClienteCreateResponse)
-async def crear_cliente_simple(
+def crear_cliente_simple(
     cliente_request: ClienteCreateSimpleRequest,
     client_service: ClientService = Depends(get_client_service)
 ):
@@ -78,11 +86,12 @@ async def crear_cliente_simple(
     Crear un nuevo cliente con información mínima.
     """
     try:
-        cliente = await client_service.create_simple_client(cliente_request)
+        cliente = client_service.create_simple_client(cliente_request)
         return ClienteCreateResponse(
             success=True,
             message="Cliente simple creado exitosamente",
-            data=cliente
+            data=cliente.model_dump()  # <-- FIX: devolver dict
         )
     except Exception as e:
+        logger.error(f"Error en crear_cliente_simple: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e)) 

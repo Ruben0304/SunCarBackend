@@ -12,7 +12,7 @@ from presentation.schemas.responses import UpdateStatusResponse
 router = APIRouter()
 
 
-@router.post("/update/data", response_model=DataUpdateResponse)
+@router.post("/data", response_model=DataUpdateResponse)
 async def check_data_updates(
     request: DataUpdateRequest,
     update_service: UpdateService = Depends(get_update_service)
@@ -33,7 +33,7 @@ async def check_data_updates(
         raise HTTPException(status_code=500, detail=f"Error al verificar actualizaciones: {str(e)}")
 
 
-@router.post("/update/application", response_model=AppUpdateResponse)
+@router.post("/application", response_model=AppUpdateResponse)
 async def check_app_updates(
     request: AppUpdateRequest,
     update_service: UpdateService = Depends(get_update_service)
@@ -56,7 +56,7 @@ async def check_app_updates(
         raise HTTPException(status_code=500, detail=f"Error al verificar actualización de app: {str(e)}")
 
 
-@router.get("/update/status", response_model=UpdateStatusResponse)
+@router.get("/status", response_model=UpdateStatusResponse)
 async def get_update_status(
     update_service: UpdateService = Depends(get_update_service)
 ):

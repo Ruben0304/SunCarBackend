@@ -1,51 +1,55 @@
+import logging
 from infrastucture.database.mongo_db.connection import get_collection
 from domain.entities.cliente import Cliente
 from typing import Optional
+
+from presentation.schemas.requests.ClienteCreateRequest import ClienteCreateRequest
 
 
 class ClientRepository:
     def __init__(self):
         self.collection_name = "clientes"
+        self.logger = logging.getLogger(__name__)
 
-    async def create_or_update_client(self, cliente: Cliente) -> Cliente:
+    def create_or_update_client(self, cliente: ClienteCreateRequest) -> ClienteCreateRequest:
         """
         Crear un nuevo cliente o actualizar si ya existe basado en el número de cliente.
         Usa upsert de MongoDB para hacer insert or update en una sola operación.
         """
         collection = get_collection(self.collection_name)
-        
-        # Convertir el cliente a diccionario
         cliente_dict = cliente.model_dump()
-        
-        # Realizar upsert basado en el número de cliente
-        result = collection.update_one(
-            {"numero": cliente.numero},  # Filtro para buscar por número
-            {"$set": cliente_dict},      # Datos a insertar/actualizar
-            upsert=True                  # Crear si no existe, actualizar si existe
-        )
-        
-        return cliente
+        self.logger.info(f"Upsert cliente: {cliente_dict}")
+        try:
+            result = collection.update_one(
+                {"numero": cliente.numero},
+                {"$set": cliente_dict},
+                upsert=True
+            )
+            self.logger.info(f"Resultado upsert: matched={result.matched_count}, modified={result.modified_count}, upserted_id={result.upserted_id}")
+            return cliente
+        except Exception as e:
+            self.logger.error(f"Error en upsert cliente: {e}")
+            raise
 
-    async def find_client_by_number(self, numero: str) -> Optional[Cliente]:
+    def find_client_by_number(self, numero: str) -> Optional[Cliente]:
         """
         Buscar un cliente por su número.
         Retorna el cliente si existe, None si no existe.
         """
         collection = get_collection(self.collection_name)
-        
-        # Buscar el cliente por número
-        cliente_doc = collection.find_one({"numero": numero})
-        
-        if cliente_doc:
-            # Convertir el documento de MongoDB a la entidad Cliente
-            return Cliente.model_validate(cliente_doc)
-        
-        return None
+        self.logger.info(f"Buscando cliente por número: {numero}")
+        try:
+            cliente_doc = collection.find_one({"numero": numero})
+            if cliente_doc:
+                self.logger.info(f"Cliente encontrado: {cliente_doc}")
+                return Cliente.model_validate(cliente_doc)
+            self.logger.info("Cliente no encontrado")
+            return None
+        except Exception as e:
+            self.logger.error(f"Error al buscar cliente: {e}")
+            raise
 
     def get_clientes(self, numero=None, nombre=None, direccion=None):
-        """
-        Obtiene clientes con filtros opcionales y los devuelve como dicts serializables.
-        """
         collection = get_collection(self.collection_name)
         query = {}
         if numero:
@@ -54,9 +58,15 @@ class ClientRepository:
             query["nombre"] = {"$regex": nombre, "$options": "i"}
         if direccion:
             query["direccion"] = {"$regex": direccion, "$options": "i"}
-        cursor = collection.find(query)
-        clientes = []
-        for doc in cursor:
-            doc["id"] = str(doc.pop("_id"))
-            clientes.append(doc)
-        return clientes
+        self.logger.info(f"Buscando clientes con query: {query}")
+        try:
+            cursor = collection.find(query)
+            clientes = []
+            for doc in cursor:
+                doc["id"] = str(doc.pop("_id"))
+                clientes.append(doc)
+            self.logger.info(f"Clientes encontrados: {len(clientes)}")
+            return clientes
+        except Exception as e:
+            self.logger.error(f"Error al obtener clientes: {e}")
+            raise

@@ -74,7 +74,7 @@ app.include_router(
 
 app.include_router(
     updates_router,
-    prefix="/api/updates",
+    prefix="/api/update",
     tags=["Actualizaciones"]
 )
 
@@ -90,10 +90,5 @@ app.include_router(
     tags=["Compartidos"]
 )
 
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(
-        app,
-        host="127.0.0.1",
-        port=8000
-    )
+
+
