@@ -1,13 +1,20 @@
 from typing import List
 from domain.entities.form import Form
 from infrastucture.repositories.reportes_repository import FormRepository
+from infrastucture.repositories.adjuntos_repository import AdjuntosRepository
+from infrastucture.external_services.supabase_uploader import upload_file_to_supabase
 
 
 class FormService:
-    def __init__(self, form_repository: FormRepository):
+    def __init__(self, form_repository: FormRepository, adjuntos_repository: AdjuntosRepository):
         self._form_repository = form_repository
+        self._adjuntos_repository = adjuntos_repository
 
-    def save_form(self, form_data: dict) -> str:
+    async def save_form(self, form_data: dict) -> str:
+        # Procesar adjuntos usando el nuevo repositorio
+        adjuntos = form_data.get("adjuntos", {})
+        adjuntos = await self._adjuntos_repository.procesar_adjuntos(adjuntos)
+        form_data["adjuntos"] = adjuntos
         return self._form_repository.save_form(form_data)
 
     async def get_all_forms(self) -> List[Form]:
