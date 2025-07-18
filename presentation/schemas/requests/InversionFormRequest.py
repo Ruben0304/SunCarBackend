@@ -143,29 +143,18 @@ class FechaHoraRequest(BaseModel):
 
 class AdjuntosRequest(BaseModel):
     """Datos de adjuntos para el request"""
-    fotos_inicio: List[str] = Field(..., description="Lista de fotos de inicio en base64")
-    fotos_fin: List[str] = Field(..., description="Lista de fotos de fin en base64")
-    firma_cliente: Optional[str] = Field(None, description="Firma del cliente en base64")
+    fotos_inicio: List[str] = Field(..., description="Lista de URLs de fotos de inicio")
+    fotos_fin: List[str] = Field(..., description="Lista de URLs de fotos de fin")
+    firma_cliente: Optional[str] = Field(None, description="URL de la firma del cliente")
 
+    # Eliminados los validadores de base64, solo se valida que no estén vacías las listas
     @validator('fotos_inicio', 'fotos_fin')
     def validate_fotos(cls, v):
         if not v:
             raise ValueError('Debe incluir al menos una foto')
-
-        for foto in v:
-            if not foto.strip():
-                raise ValueError('Las fotos no pueden estar vacías')
-
-            # Si tiene prefijo, quitarlo
-            if ',' in foto:
-                foto_base64 = foto.split(',')[1]
-            else:
-                foto_base64 = foto
-
-            # Validación básica de base64
-            if not re.match(r'^[A-Za-z0-9+/]*={0,2}$', foto_base64):
-                raise ValueError('El formato de imagen base64 no es válido')
-
+        for url in v:
+            if not url.strip():
+                raise ValueError('Las URLs de las fotos no pueden estar vacías')
         return v
 
     @validator('firma_cliente')
@@ -173,12 +162,7 @@ class AdjuntosRequest(BaseModel):
         if v is None:
             return v
         if not v.strip():
-            raise ValueError('La firma del cliente no puede estar vacía')
-        # Validación básica de base64
-        if ',' in v:
-            v = v.split(',')[1]
-        if not re.match(r'^[A-Za-z0-9+/]*={0,2}$', v):
-            raise ValueError('El formato de imagen base64 no es válido')
+            raise ValueError('La URL de la firma del cliente no puede estar vacía')
         return v
 
 

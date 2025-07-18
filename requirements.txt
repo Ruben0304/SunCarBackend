@@ -5,3 +5,4 @@ pymongo
 motor
 python-dotenv
 python-multipart
+supabase

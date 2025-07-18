@@ -19,6 +19,7 @@ from presentation.schemas.responses import (
 from domain.entities.form import Form as FormEntity
 import base64
 import json
+from infrastucture.external_services.supabase_uploader import upload_file_to_supabase
 
 router = APIRouter()
 
@@ -68,15 +69,27 @@ async def create_inversion_report(
         cliente_dict = json.loads(cliente)
         fecha_hora_dict = json.loads(fecha_hora)
 
-        fotos_inicio_base64 = await FileBase64Converter.files_to_base64(fotos_inicio)
-        fotos_fin_base64 = await FileBase64Converter.files_to_base64(fotos_fin)
+        # Subir fotos a Supabase y obtener URLs
+        fotos_inicio_urls = []
+        for file in fotos_inicio:
+            content = await file.read()
+            url = await upload_file_to_supabase(content, file.filename, file.content_type)
+            fotos_inicio_urls.append(url)
+
+        fotos_fin_urls = []
+        for file in fotos_fin:
+            content = await file.read()
+            url = await upload_file_to_supabase(content, file.filename, file.content_type)
+            fotos_fin_urls.append(url)
+
         adjuntos = {
-            "fotos_inicio": fotos_inicio_base64,
-            "fotos_fin": fotos_fin_base64
+            "fotos_inicio": fotos_inicio_urls,
+            "fotos_fin": fotos_fin_urls
         }
         if firma_cliente:
-            firma_cliente_base64 = (await FileBase64Converter.files_to_base64([firma_cliente]))[0]
-            adjuntos["firma_cliente"] = firma_cliente_base64
+            content = await firma_cliente.read()
+            url = await upload_file_to_supabase(content, firma_cliente.filename, firma_cliente.content_type)
+            adjuntos["firma_cliente"] = url
 
         request_data = {
             "tipo_reporte": tipo_reporte,
@@ -88,7 +101,7 @@ async def create_inversion_report(
         }
 
         inversion_request = InversionRequest(**request_data)
-        form_id = form_service.save_form(inversion_request.dict())
+        form_id = await form_service.save_form(inversion_request.dict())
         return InversionReportResponse(
             success=True,
             message=f"Reporte de inversión recibido y guardado con id {form_id}",
@@ -154,22 +167,27 @@ async def create_averia_report(
         cliente_dict = json.loads(cliente)
         fecha_hora_dict = json.loads(fecha_hora)
 
-        # Procesar fotos solo si se proporcionan
-        fotos_inicio_base64 = []
-        fotos_fin_base64 = []
+        # Subir fotos a Supabase y obtener URLs
+        fotos_inicio_urls = []
+        for file in fotos_inicio:
+            content = await file.read()
+            url = await upload_file_to_supabase(content, file.filename, file.content_type)
+            fotos_inicio_urls.append(url)
 
-        if fotos_inicio:
-            fotos_inicio_base64 = await FileBase64Converter.files_to_base64(fotos_inicio)
-        if fotos_fin:
-            fotos_fin_base64 = await FileBase64Converter.files_to_base64(fotos_fin)
+        fotos_fin_urls = []
+        for file in fotos_fin:
+            content = await file.read()
+            url = await upload_file_to_supabase(content, file.filename, file.content_type)
+            fotos_fin_urls.append(url)
 
         adjuntos = {
-            "fotos_inicio": fotos_inicio_base64,
-            "fotos_fin": fotos_fin_base64
+            "fotos_inicio": fotos_inicio_urls,
+            "fotos_fin": fotos_fin_urls
         }
         if firma_cliente:
-            firma_cliente_base64 = (await FileBase64Converter.files_to_base64([firma_cliente]))[0]
-            adjuntos["firma_cliente"] = firma_cliente_base64
+            content = await firma_cliente.read()
+            url = await upload_file_to_supabase(content, firma_cliente.filename, firma_cliente.content_type)
+            adjuntos["firma_cliente"] = url
 
         request_data = {
             "tipo_reporte": tipo_reporte,
@@ -182,7 +200,7 @@ async def create_averia_report(
         }
 
         averia_request = AveriaRequest(**request_data)
-        form_id = form_service.save_form(averia_request.dict())
+        form_id = await form_service.save_form(averia_request.dict())
         return AveriaReportResponse(
             success=True,
             message=f"Reporte de avería recibido y guardado con id {form_id}",
@@ -248,22 +266,27 @@ async def create_mantenimiento_report(
         cliente_dict = json.loads(cliente)
         fecha_hora_dict = json.loads(fecha_hora)
 
-        # Procesar fotos solo si se proporcionan
-        fotos_inicio_base64 = []
-        fotos_fin_base64 = []
+        # Subir fotos a Supabase y obtener URLs
+        fotos_inicio_urls = []
+        for file in fotos_inicio:
+            content = await file.read()
+            url = await upload_file_to_supabase(content, file.filename, file.content_type)
+            fotos_inicio_urls.append(url)
 
-        if fotos_inicio:
-            fotos_inicio_base64 = await FileBase64Converter.files_to_base64(fotos_inicio)
-        if fotos_fin:
-            fotos_fin_base64 = await FileBase64Converter.files_to_base64(fotos_fin)
+        fotos_fin_urls = []
+        for file in fotos_fin:
+            content = await file.read()
+            url = await upload_file_to_supabase(content, file.filename, file.content_type)
+            fotos_fin_urls.append(url)
 
         adjuntos = {
-            "fotos_inicio": fotos_inicio_base64,
-            "fotos_fin": fotos_fin_base64
+            "fotos_inicio": fotos_inicio_urls,
+            "fotos_fin": fotos_fin_urls
         }
         if firma_cliente:
-            firma_cliente_base64 = (await FileBase64Converter.files_to_base64([firma_cliente]))[0]
-            adjuntos["firma_cliente"] = firma_cliente_base64
+            content = await firma_cliente.read()
+            url = await upload_file_to_supabase(content, firma_cliente.filename, firma_cliente.content_type)
+            adjuntos["firma_cliente"] = url
 
         request_data = {
             "tipo_reporte": tipo_reporte,
@@ -276,7 +299,7 @@ async def create_mantenimiento_report(
         }
 
         mantenimiento_request = MantenimientoRequest(**request_data)
-        form_id = form_service.save_form(mantenimiento_request.dict())
+        form_id = await form_service.save_form(mantenimiento_request.dict())
         return MantenimientoReportResponse(
             success=True,
             message=f"Reporte de mantenimiento recibido y guardado con id {form_id}",
