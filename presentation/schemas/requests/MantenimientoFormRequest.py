@@ -119,6 +119,7 @@ class AdjuntosRequest(BaseModel):
     """Datos de adjuntos para el request"""
     fotos_inicio: Optional[List[str]] = Field(default=[], description="Lista de fotos de inicio en base64")
     fotos_fin: Optional[List[str]] = Field(default=[], description="Lista de fotos de fin en base64")
+    firma_cliente: Optional[str] = Field(None, description="Firma del cliente en base64")
 
     @validator('fotos_inicio', 'fotos_fin')
     def validate_fotos(cls, v):
@@ -139,6 +140,19 @@ class AdjuntosRequest(BaseModel):
             if not re.match(r'^[A-Za-z0-9+/]*={0,2}$', foto_base64):
                 raise ValueError('El formato de imagen base64 no es válido')
 
+        return v
+
+    @validator('firma_cliente')
+    def validate_firma_cliente(cls, v):
+        if v is None:
+            return v
+        if not v.strip():
+            raise ValueError('La firma del cliente no puede estar vacía')
+        # Validación básica de base64
+        if ',' in v:
+            v = v.split(',')[1]
+        if not re.match(r'^[A-Za-z0-9+/]*={0,2}$', v):
+            raise ValueError('El formato de imagen base64 no es válido')
         return v
 
 
