@@ -7,6 +7,7 @@ from application.services.worker_service import WorkerService
 from application.services.form_service import FormService
 from application.services.auth_service import AuthService
 from application.services.update_service import UpdateService
+from infrastucture.repositories.adjuntos_repository import AdjuntosRepository
 from infrastucture.repositories.client_repository import ClientRepository
 from infrastucture.repositories.productos_repository import ProductRepository
 from infrastucture.repositories.trabajadores_repository import WorkerRepository
@@ -19,6 +20,7 @@ worker_repository = WorkerRepository()
 form_repository = FormRepository()
 brigada_repository = BrigadaRepository()
 client_repository = ClientRepository()
+adjuntos_repository = AdjuntosRepository()
 
 
 # Dependency functions for repositories
@@ -51,6 +53,11 @@ def get_brigada_repository() -> BrigadaRepository:
     """
     return brigada_repository
 
+def get_adjuntos_repository() -> AdjuntosRepository:
+    """
+    Dependency for FastAPI that returns the singleton instance of BrigadaRepository.
+    """
+    return adjuntos_repository
 
 # Dependency functions for services
 def get_product_service(
@@ -72,9 +79,10 @@ def get_worker_service(
 
 
 def get_form_service(
-        form_repo: Annotated[FormRepository, Depends(get_form_repository)]
+        form_repo: Annotated[FormRepository, Depends(get_form_repository)],
+        adjuntos_repo: Annotated[AdjuntosRepository, Depends(get_adjuntos_repository)]
 ) -> FormService:
-    return FormService(form_repo)
+    return FormService(form_repo,adjuntos_repo)
 
 def get_client_service(
         client_repo: Annotated[ClientRepository, Depends(get_client_repository)]
