@@ -11,10 +11,7 @@ class FormService:
         self._adjuntos_repository = adjuntos_repository
 
     async def save_form(self, form_data: dict) -> str:
-        # Procesar adjuntos usando el nuevo repositorio
-        adjuntos = form_data.get("adjuntos", {})
-        adjuntos = await self._adjuntos_repository.procesar_adjuntos(adjuntos)
-        form_data["adjuntos"] = adjuntos
+        # Ya no procesamos adjuntos aquí, porque ya son URLs
         return self._form_repository.save_form(form_data)
 
     async def get_all_forms(self) -> List[Form]:
