@@ -143,15 +143,17 @@ class FechaHoraRequest(BaseModel):
 
 class AdjuntosRequest(BaseModel):
     """Datos de adjuntos para el request"""
-    fotos_inicio: List[str] = Field(..., description="Lista de URLs de fotos de inicio")
-    fotos_fin: List[str] = Field(..., description="Lista de URLs de fotos de fin")
+    fotos_inicio: Optional[List[str]] = Field(default=None, description="Lista de URLs de fotos de inicio")
+    fotos_fin: Optional[List[str]] = Field(default=None, description="Lista de URLs de fotos de fin")
     firma_cliente: Optional[str] = Field(None, description="URL de la firma del cliente")
 
-    # Eliminados los validadores de base64, solo se valida que no estén vacías las listas
-    @validator('fotos_inicio', 'fotos_fin')
+    @validator('fotos_inicio', 'fotos_fin', pre=True, always=True)
     def validate_fotos(cls, v):
-        if not v:
-            raise ValueError('Debe incluir al menos una foto')
+        if v is None:
+            return v
+        if not isinstance(v, list):
+            raise ValueError('Debe ser una lista de URLs')
+        # Permitir listas vacías
         for url in v:
             if not url.strip():
                 raise ValueError('Las URLs de las fotos no pueden estar vacías')
@@ -173,7 +175,7 @@ class InversionRequest(BaseModel):
     materiales: List[MaterialRequest] = Field(..., min_items=1, description="Lista de materiales")
     cliente: ClienteRequest = Field(..., description="Datos de cliente")
     fecha_hora: FechaHoraRequest = Field(..., description="Datos de fecha y hora")
-    adjuntos: AdjuntosRequest = Field(..., description="Archivos adjuntos")
+    adjuntos: Optional[AdjuntosRequest] = Field(default=None, description="Archivos adjuntos")
     fecha_creacion: str = Field(default_factory=lambda: date.today().isoformat(),
                                 description="Fecha de creación del reporte")
 

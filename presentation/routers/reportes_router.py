@@ -57,8 +57,8 @@ async def create_inversion_report(
         materiales: str = Form(...),
         cliente: str = Form(...),
         fecha_hora: str = Form(...),
-        fotos_inicio: list[UploadFile] = File(...),
-        fotos_fin: list[UploadFile] = File(...),
+        fotos_inicio: list[UploadFile] = File(default=[]),
+        fotos_fin: list[UploadFile] = File(default=[]),
         firma_cliente: UploadFile = File(None),
         form_service: FormService = Depends(get_form_service)
 ):
@@ -69,23 +69,24 @@ async def create_inversion_report(
         cliente_dict = json.loads(cliente)
         fecha_hora_dict = json.loads(fecha_hora)
 
-        # Subir fotos a Supabase y obtener URLs
-        fotos_inicio_urls = []
-        for file in fotos_inicio:
-            content = await file.read()
-            url = await upload_file_to_supabase(content, file.filename, file.content_type)
-            fotos_inicio_urls.append(url)
-
-        fotos_fin_urls = []
-        for file in fotos_fin:
-            content = await file.read()
-            url = await upload_file_to_supabase(content, file.filename, file.content_type)
-            fotos_fin_urls.append(url)
-
-        adjuntos = {
-            "fotos_inicio": fotos_inicio_urls,
-            "fotos_fin": fotos_fin_urls
-        }
+        # Subir fotos a Supabase y obtener URLs solo si existen
+        adjuntos = {}
+        if fotos_inicio:
+            fotos_inicio_urls = []
+            for file in fotos_inicio:
+                content = await file.read()
+                url = await upload_file_to_supabase(content, file.filename, file.content_type)
+                fotos_inicio_urls.append(url)
+            if fotos_inicio_urls:
+                adjuntos["fotos_inicio"] = fotos_inicio_urls
+        if fotos_fin:
+            fotos_fin_urls = []
+            for file in fotos_fin:
+                content = await file.read()
+                url = await upload_file_to_supabase(content, file.filename, file.content_type)
+                fotos_fin_urls.append(url)
+            if fotos_fin_urls:
+                adjuntos["fotos_fin"] = fotos_fin_urls
         if firma_cliente:
             content = await firma_cliente.read()
             url = await upload_file_to_supabase(content, firma_cliente.filename, firma_cliente.content_type)
@@ -97,7 +98,7 @@ async def create_inversion_report(
             "materiales": materiales_list,
             "cliente": cliente_dict,
             "fecha_hora": fecha_hora_dict,
-            "adjuntos": adjuntos
+            "adjuntos": adjuntos if adjuntos else None
         }
 
         inversion_request = InversionRequest(**request_data)
