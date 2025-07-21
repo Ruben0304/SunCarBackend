@@ -65,6 +65,8 @@ class ClientRepository:
             for doc in cursor:
                 doc["id"] = str(doc.pop("_id"))
                 clientes.append(doc)
+            # Ordenar por los últimos 4 dígitos del campo 'numero'
+            clientes.sort(key=lambda c: int(c["numero"][-4:]))
             self.logger.info(f"Clientes encontrados: {len(clientes)}")
             return clientes
         except Exception as e:
