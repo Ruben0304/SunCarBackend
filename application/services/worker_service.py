@@ -28,7 +28,13 @@ class WorkerService:
         return self.worker_repo.set_worker_password(ci, contrasena)
 
     async def remove_worker_password(self, ci: str) -> bool:
-        return self.worker_repo.remove_worker_password(ci)
+        # Eliminar la contraseña
+        removed = self.worker_repo.remove_worker_password(ci)
+        if not removed:
+            return False
+        # Verificar si era jefe de alguna brigada y eliminarla
+        self.brigada_repo.delete_brigada_by_lider_ci(ci)
+        return True
 
     def get_hours_worked_by_ci(self, ci: str, fecha_inicio: str, fecha_fin: str) -> float:
         """
