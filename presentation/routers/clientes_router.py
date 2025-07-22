@@ -9,6 +9,7 @@ from infrastucture.dependencies import get_client_service
 from domain.entities.cliente import Cliente
 from presentation.schemas.requests.ClienteCreateRequest import ClienteCreateRequest, ClienteCreateSimpleRequest
 from presentation.schemas.responses import ClienteCreateResponse, ClienteVerifyResponse
+from presentation.schemas.requests.ClienteUpdateRequest import ClienteUpdateRequest
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -94,4 +95,27 @@ def crear_cliente_simple(
         )
     except Exception as e:
         logger.error(f"Error en crear_cliente_simple: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.patch("/{numero}", summary="Actualizar cliente parcialmente")
+def actualizar_cliente_parcial(
+    numero: str,
+    update_request: ClienteUpdateRequest,
+    client_service: ClientService = Depends(get_client_service)
+):
+    """
+    Actualiza parcialmente un cliente. Solo los campos enviados serán modificados.
+    """
+    update_data = update_request.model_dump(exclude_unset=True)
+    if not update_data:
+        raise HTTPException(status_code=400, detail="No se enviaron campos para actualizar")
+    try:
+        updated = client_service.update_client_partial(numero, update_data)
+        if updated:
+            return {"success": True, "message": "Cliente actualizado correctamente"}
+        else:
+            return {"success": False, "message": "Cliente no encontrado o sin cambios"}
+    except Exception as e:
+        logger.error(f"Error en actualizar_cliente_parcial: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e)) 

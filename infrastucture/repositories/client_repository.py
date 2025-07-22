@@ -49,6 +49,19 @@ class ClientRepository:
             self.logger.error(f"Error al buscar cliente: {e}")
             raise
 
+    def update_client_partial(self, numero: str, update_data: dict) -> bool:
+        collection = get_collection(self.collection_name)
+        self.logger.info(f"Actualizando cliente {numero} con datos: {update_data}")
+        try:
+            result = collection.update_one(
+                {"numero": numero},
+                {"$set": update_data}
+            )
+            return result.modified_count > 0
+        except Exception as e:
+            self.logger.error(f"Error al actualizar cliente: {e}")
+            raise
+
     def get_clientes(self, numero=None, nombre=None, direccion=None):
         collection = get_collection(self.collection_name)
         query = {}

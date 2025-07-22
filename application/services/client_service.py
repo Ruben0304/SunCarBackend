@@ -65,3 +65,6 @@ class ClientService:
     def get_clientes(self, numero=None, nombre=None, direccion=None):
         self.logger.info(f"Listando clientes con filtros: numero={numero}, nombre={nombre}, direccion={direccion}")
         return self._client_repository.get_clientes(numero, nombre, direccion)
+
+    def update_client_partial(self, numero: str, update_data: dict) -> bool:
+        return self._client_repository.update_client_partial(numero, update_data)
