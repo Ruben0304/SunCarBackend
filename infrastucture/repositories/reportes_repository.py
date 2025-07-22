@@ -189,3 +189,76 @@ class FormRepository:
             logger.error(f"❌ Error obteniendo reporte por id: {e}")
             raise Exception(f"Error obteniendo reporte por id: {str(e)}")
 
+    def get_materiales_usados_por_brigada(self, lider_ci: str, fecha_inicio: str, fecha_fin: str, categoria: str = None):
+        """
+        Devuelve un dict con los materiales usados y su cantidad total para una brigada en un rango de fechas, filtrando por categoría si se indica.
+        """
+        reportes = self.get_reportes(fecha_inicio=fecha_inicio, fecha_fin=fecha_fin, lider_ci=lider_ci)
+        materiales_sumados = {}
+        for reporte in reportes:
+            for material in reporte.get("materiales", []):
+                if categoria and (material.get("categoria") != categoria and material.get("descripcion") != categoria):
+                    continue
+                codigo = material.get("codigo")
+                if not codigo:
+                    continue
+                if codigo not in materiales_sumados:
+                    materiales_sumados[codigo] = {
+                        "codigo": codigo,
+                        "descripcion": material.get("descripcion"),
+                        "um": material.get("um"),
+                        "cantidad": 0
+                    }
+                try:
+                    cantidad = float(material.get("cantidad", 0))
+                except Exception:
+                    cantidad = 0
+                materiales_sumados[codigo]["cantidad"] += cantidad
+        return list(materiales_sumados.values())
+
+    def get_materiales_usados_todas_brigadas(self, fecha_inicio: str, fecha_fin: str, categoria: str = None):
+        """
+        Devuelve una lista de dicts, cada uno con el nombre del jefe de brigada y los materiales usados por esa brigada en el rango de fechas, filtrando por categoría si se indica.
+        """
+        reportes = self.get_reportes(fecha_inicio=fecha_inicio, fecha_fin=fecha_fin)
+        brigadas_materiales = {}
+        for reporte in reportes:
+            lider = reporte.get("brigada", {}).get("lider", {})
+            lider_ci = lider.get("CI")
+            lider_nombre = lider.get("nombre")
+            if not lider_ci:
+                continue
+            if lider_ci not in brigadas_materiales:
+                brigadas_materiales[lider_ci] = {
+                    "lider_ci": lider_ci,
+                    "lider_nombre": lider_nombre,
+                    "materiales": {}
+                }
+            for material in reporte.get("materiales", []):
+                if categoria and (material.get("categoria") != categoria and material.get("descripcion") != categoria):
+                    continue
+                codigo = material.get("codigo")
+                if not codigo:
+                    continue
+                if codigo not in brigadas_materiales[lider_ci]["materiales"]:
+                    brigadas_materiales[lider_ci]["materiales"][codigo] = {
+                        "codigo": codigo,
+                        "descripcion": material.get("descripcion"),
+                        "um": material.get("um"),
+                        "cantidad": 0
+                    }
+                try:
+                    cantidad = float(material.get("cantidad", 0))
+                except Exception:
+                    cantidad = 0
+                brigadas_materiales[lider_ci]["materiales"][codigo]["cantidad"] += cantidad
+        # Convertir materiales a lista
+        resultado = []
+        for brigada in brigadas_materiales.values():
+            resultado.append({
+                "lider_ci": brigada["lider_ci"],
+                "lider_nombre": brigada["lider_nombre"],
+                "materiales": list(brigada["materiales"].values())
+            })
+        return resultado
+

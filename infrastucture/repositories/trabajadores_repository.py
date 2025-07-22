@@ -102,6 +102,11 @@ class WorkerRepository:
         result = collection.update_one({"CI": ci}, {"$set": {"contraseña": contrasena}})
         return result.modified_count > 0
 
+    def remove_worker_password(self, ci: str) -> bool:
+        collection = get_collection(self.collection_name)
+        result = collection.update_one({"CI": ci}, {"$unset": {"contraseña": ""}})
+        return result.modified_count > 0
+
     def get_hours_worked_by_ci(self, ci: str, fecha_inicio: str, fecha_fin: str) -> float:
         """
         Obtiene el total de horas trabajadas por una persona dado su CI y rango de fechas.

@@ -57,3 +57,23 @@ Content-Type: application/json
   "brigada_id": "6865f9d13ec25099449b4a00",
   "contrasena": "heyjude"
 }
+
+### Test: Materiales usados por una brigada (sin filtro de categoria)
+GET http://localhost:8000/api/reportes/materiales-usados/brigada?lider_ci=02091968281&fecha_inicio=2025-01-01&fecha_fin=2025-12-31
+Accept: application/json
+
+### Test: Materiales usados por una brigada (con filtro de categoria)
+GET http://localhost:8000/reportes/materiales-usados/brigada?lider_ci=12345678&fecha_inicio=2024-01-01&fecha_fin=2024-12-31&categoria=Cemento
+Accept: application/json
+
+### Test: Materiales usados por todas las brigadas (sin filtro de categoria)
+GET http://localhost:8000/api/reportes/materiales-usados/todas-brigadas?fecha_inicio=2025-01-01&fecha_fin=2025-12-31
+Accept: application/json
+
+### Test: Materiales usados por todas las brigadas (con filtro de categoria)
+GET http://localhost:8000/reportes/materiales-usados/todas-brigadas?fecha_inicio=2024-01-01&fecha_fin=2024-12-31&categoria=Cemento
+Accept: application/json
+
+### Eliminar contraseña de un trabajador (dejar de ser jefe)
+DELETE http://127.0.0.1:8000/api/trabajadores/03111866789/contrasena
+Accept: application/json

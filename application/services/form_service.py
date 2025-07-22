@@ -27,3 +27,9 @@ class FormService:
 
     def get_reporte_by_id(self, reporte_id: str) -> dict:
         return self._form_repository.get_reporte_by_id(reporte_id)
+
+    def get_materiales_usados_por_brigada(self, lider_ci: str, fecha_inicio: str, fecha_fin: str, categoria: str = None):
+        return self._form_repository.get_materiales_usados_por_brigada(lider_ci, fecha_inicio, fecha_fin, categoria)
+
+    def get_materiales_usados_todas_brigadas(self, fecha_inicio: str, fecha_fin: str, categoria: str = None):
+        return self._form_repository.get_materiales_usados_todas_brigadas(fecha_inicio, fecha_fin, categoria)

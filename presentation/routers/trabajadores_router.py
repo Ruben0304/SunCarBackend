@@ -319,3 +319,21 @@ async def eliminar_trabajador(
             raise HTTPException(status_code=404, detail=f"Trabajador con CI {ci} no encontrado.")
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e)) 
+
+
+@router.delete("/{ci}/contrasena")
+async def eliminar_contrasena_trabajador(
+    ci: str = Path(..., description="Cédula de identidad del trabajador al que se le eliminará la contraseña"),
+    worker_service: WorkerService = Depends(get_worker_service)
+):
+    """
+    Elimina la contraseña de un trabajador (lo convierte en trabajador normal).
+    """
+    try:
+        eliminado = await worker_service.remove_worker_password(ci)
+        if eliminado:
+            return {"success": True, "message": f"Contraseña eliminada para el trabajador con CI {ci}."}
+        else:
+            raise HTTPException(status_code=404, detail=f"Trabajador con CI {ci} no encontrado o ya no tiene contraseña.")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e)) 

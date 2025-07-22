@@ -226,3 +226,24 @@ class AllWorkersHoursWorkedResponse(BaseModel):
                 }
             }
         } 
+
+class MaterialUsadoResponse(BaseModel):
+    codigo: str
+    descripcion: str
+    um: str
+    cantidad: float
+
+class MaterialesPorBrigadaResponse(BaseModel):
+    lider_ci: str
+    lider_nombre: str
+    materiales: list[MaterialUsadoResponse]
+
+class MaterialesUsadosBrigadaResponse(BaseModel):
+    success: bool
+    message: str
+    materiales: list[MaterialUsadoResponse]
+
+class MaterialesUsadosTodasBrigadasResponse(BaseModel):
+    success: bool
+    message: str
+    brigadas: list[MaterialesPorBrigadaResponse] 

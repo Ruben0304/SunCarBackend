@@ -27,6 +27,9 @@ class WorkerService:
     async def set_worker_password(self, ci: str, contrasena: str) -> bool:
         return self.worker_repo.set_worker_password(ci, contrasena)
 
+    async def remove_worker_password(self, ci: str) -> bool:
+        return self.worker_repo.remove_worker_password(ci)
+
     def get_hours_worked_by_ci(self, ci: str, fecha_inicio: str, fecha_fin: str) -> float:
         """
         Obtiene el total de horas trabajadas por una persona dado su CI y rango de fechas.

@@ -20,6 +20,10 @@ from domain.entities.form import Form as FormEntity
 import base64
 import json
 from infrastucture.external_services.supabase_uploader import upload_file_to_supabase
+from presentation.schemas.responses.reportes_responses import (
+    MaterialesUsadosBrigadaResponse,
+    MaterialesUsadosTodasBrigadasResponse
+)
 
 router = APIRouter()
 
@@ -387,3 +391,43 @@ def obtener_reporte_por_id(
     if not reporte:
         raise HTTPException(status_code=404, detail="Reporte no encontrado")
     return reporte
+
+
+@router.get(
+    "/materiales-usados/brigada",
+    response_model=MaterialesUsadosBrigadaResponse,
+    summary="Materiales usados por una brigada en un rango de fechas",
+    tags=["Reportes"]
+)
+def materiales_usados_brigada(
+    lider_ci: str = Query(..., description="CI del jefe de brigada"),
+    fecha_inicio: str = Query(..., description="Fecha inicio (YYYY-MM-DD)"),
+    fecha_fin: str = Query(..., description="Fecha fin (YYYY-MM-DD)"),
+    categoria: str = Query(None, description="Categoría del producto/material (opcional)"),
+    form_service: FormService = Depends(get_form_service)
+):
+    materiales = form_service.get_materiales_usados_por_brigada(lider_ci, fecha_inicio, fecha_fin, categoria)
+    return MaterialesUsadosBrigadaResponse(
+        success=True,
+        message="Materiales usados por la brigada obtenidos correctamente",
+        materiales=materiales
+    )
+
+@router.get(
+    "/materiales-usados/todas-brigadas",
+    response_model=MaterialesUsadosTodasBrigadasResponse,
+    summary="Materiales usados por todas las brigadas en un rango de fechas",
+    tags=["Reportes"]
+)
+def materiales_usados_todas_brigadas(
+    fecha_inicio: str = Query(..., description="Fecha inicio (YYYY-MM-DD)"),
+    fecha_fin: str = Query(..., description="Fecha fin (YYYY-MM-DD)"),
+    categoria: str = Query(None, description="Categoría del producto/material (opcional)"),
+    form_service: FormService = Depends(get_form_service)
+):
+    brigadas = form_service.get_materiales_usados_todas_brigadas(fecha_inicio, fecha_fin, categoria)
+    return MaterialesUsadosTodasBrigadasResponse(
+        success=True,
+        message="Materiales usados por todas las brigadas obtenidos correctamente",
+        brigadas=brigadas
+    )
