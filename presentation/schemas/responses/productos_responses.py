@@ -36,3 +36,20 @@ class CategoriaCreateResponse(BaseModel):
 class MaterialAddResponse(BaseModel):
     success: bool
     message: str 
+
+
+class ProductoUpdateResponse(BaseModel):
+    success: bool
+    message: str
+
+class ProductoDeleteResponse(BaseModel):
+    success: bool
+    message: str
+
+class MaterialUpdateResponse(BaseModel):
+    success: bool
+    message: str
+
+class MaterialDeleteResponse(BaseModel):
+    success: bool
+    message: str 

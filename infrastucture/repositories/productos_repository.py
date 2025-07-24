@@ -183,3 +183,60 @@ class ProductRepository:
             logger.error(f"❌ Error agregando material a la categoría: {e}")
             print(f"❌ Error agregando material a la categoría: {e}")
             raise e
+
+    def delete_material_from_product(self, producto_id: str, material_codigo: str) -> bool:
+        """
+        Elimina un material de un producto por su código.
+        """
+        try:
+            collection = get_collection(self.collection_name)
+            result = collection.update_one(
+                {"_id": ObjectId(producto_id)},
+                {"$pull": {"materiales": {"codigo": material_codigo}}}
+            )
+            return result.modified_count > 0
+        except Exception as e:
+            logger.error(f"❌ Error eliminando material: {e}")
+            raise e
+
+    def update_material_in_product(self, producto_id: str, material_codigo: str, new_material: dict) -> bool:
+        """
+        Edita todos los atributos de un material dentro de un producto.
+        """
+        try:
+            collection = get_collection(self.collection_name)
+            result = collection.update_one(
+                {"_id": ObjectId(producto_id), "materiales.codigo": material_codigo},
+                {"$set": {"materiales.$": new_material}}
+            )
+            return result.modified_count > 0
+        except Exception as e:
+            logger.error(f"❌ Error actualizando material: {e}")
+            raise e
+
+    def update_product(self, producto_id: str, new_data: dict) -> bool:
+        """
+        Edita todos los atributos de un producto (incluyendo categoría y materiales).
+        """
+        try:
+            collection = get_collection(self.collection_name)
+            result = collection.update_one(
+                {"_id": ObjectId(producto_id)},
+                {"$set": new_data}
+            )
+            return result.modified_count > 0
+        except Exception as e:
+            logger.error(f"❌ Error actualizando producto: {e}")
+            raise e
+
+    def delete_product(self, producto_id: str) -> bool:
+        """
+        Elimina un producto completo por su id.
+        """
+        try:
+            collection = get_collection(self.collection_name)
+            result = collection.delete_one({"_id": ObjectId(producto_id)})
+            return result.deleted_count > 0
+        except Exception as e:
+            logger.error(f"❌ Error eliminando producto: {e}")
+            raise e

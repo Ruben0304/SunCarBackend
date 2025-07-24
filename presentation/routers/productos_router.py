@@ -1,19 +1,22 @@
-from http.client import HTTPException
 from typing import List, Optional
 
-from fastapi import APIRouter, Depends, Body
+from fastapi import APIRouter, Depends, Body, Path, HTTPException
 from pydantic import BaseModel
 
 from application.services.product_service import ProductService
 from infrastucture.dependencies import get_product_service
 from domain.entities.producto import CatalogoProductos, Material, Cataegoria
-from presentation.schemas.responses import (
+from presentation.schemas.responses.productos_responses import (
     ProductoListResponse,
     CategoriaListResponse,
     MaterialListResponse,
     ProductoCreateResponse,
     CategoriaCreateResponse,
-    MaterialAddResponse
+    MaterialAddResponse,
+    ProductoUpdateResponse,
+    ProductoDeleteResponse,
+    MaterialUpdateResponse,
+    MaterialDeleteResponse
 )
 
 router = APIRouter()
@@ -47,7 +50,7 @@ async def read_products(
             data=products
         )
     except Exception as e:
-        raise HTTPException()
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.get("/categorias", response_model=CategoriaListResponse)
@@ -65,7 +68,7 @@ async def read_categories(
             data=categories
         )
     except Exception as e:
-        raise HTTPException()
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.get("/categorias/{categoria}/materiales", response_model=MaterialListResponse)
@@ -84,7 +87,7 @@ async def read_materials_by_category(
             data=materials
         )
     except Exception as e:
-        raise HTTPException()
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.post("/", response_model=ProductoCreateResponse)
@@ -145,5 +148,74 @@ async def crear_categoria(
             message="Categoría creada exitosamente",
             categoria_id=categoria_id
         )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.delete("/{producto_id}", response_model=ProductoDeleteResponse)
+async def eliminar_producto(
+    producto_id: str = Path(..., description="ID del producto a eliminar"),
+    product_service: ProductService = Depends(get_product_service)
+):
+    """
+    Eliminar un producto completo por su id.
+    """
+    try:
+        ok = await product_service.delete_product(producto_id)
+        if not ok:
+            return ProductoDeleteResponse(success=False, message="Producto no encontrado o no eliminado")
+        return ProductoDeleteResponse(success=True, message="Producto eliminado exitosamente")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.put("/{producto_id}", response_model=ProductoUpdateResponse)
+async def editar_producto(
+    producto_id: str,
+    new_data: dict = Body(..., description="Nuevos datos del producto (categoria, materiales, etc.)"),
+    product_service: ProductService = Depends(get_product_service)
+):
+    """
+    Editar todos los atributos de un producto (incluyendo categoría y materiales).
+    """
+    try:
+        ok = await product_service.update_product(producto_id, new_data)
+        if not ok:
+            return ProductoUpdateResponse(success=False, message="Producto no encontrado o sin cambios")
+        return ProductoUpdateResponse(success=True, message="Producto actualizado exitosamente")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.delete("/{producto_id}/materiales/{material_codigo}", response_model=MaterialDeleteResponse)
+async def eliminar_material(
+    producto_id: str,
+    material_codigo: str,
+    product_service: ProductService = Depends(get_product_service)
+):
+    """
+    Eliminar un material de un producto por su código.
+    """
+    try:
+        ok = await product_service.delete_material_from_product(producto_id, material_codigo)
+        if not ok:
+            return MaterialDeleteResponse(success=False, message="Material no encontrado o no eliminado")
+        return MaterialDeleteResponse(success=True, message="Material eliminado exitosamente")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.put("/{producto_id}/materiales/{material_codigo}", response_model=MaterialUpdateResponse)
+async def editar_material(
+    producto_id: str,
+    material_codigo: str,
+    new_material: dict = Body(..., description="Nuevos datos del material (codigo, descripcion, um)"),
+    product_service: ProductService = Depends(get_product_service)
+):
+    """
+    Editar todos los atributos de un material dentro de un producto.
+    """
+    try:
+        ok = await product_service.update_material_in_product(producto_id, material_codigo, new_material)
+        if not ok:
+            return MaterialUpdateResponse(success=False, message="Material no encontrado o sin cambios")
+        return MaterialUpdateResponse(success=True, message="Material actualizado exitosamente")
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e)) 

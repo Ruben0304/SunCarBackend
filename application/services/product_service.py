@@ -38,6 +38,9 @@ class ProductService:
         """
         Agrega un material a un producto existente.
         """
+        from domain.entities.producto import MaterialConFecha
+        if not isinstance(material, MaterialConFecha):
+            material = MaterialConFecha(**material)
         return self.productos_repository.add_material_to_category(producto_id, material)
 
     async def create_category(self, categoria: str) -> str:
@@ -45,4 +48,28 @@ class ProductService:
         Crea una nueva categoría (producto vacío).
         """
         return self.productos_repository.create_category(categoria, materiales=[])
+
+    async def delete_material_from_product(self, producto_id: str, material_codigo: str) -> bool:
+        """
+        Elimina un material de un producto por su código.
+        """
+        return self.productos_repository.delete_material_from_product(producto_id, material_codigo)
+
+    async def update_material_in_product(self, producto_id: str, material_codigo: str, new_material: dict) -> bool:
+        """
+        Edita todos los atributos de un material dentro de un producto.
+        """
+        return self.productos_repository.update_material_in_product(producto_id, material_codigo, new_material)
+
+    async def update_product(self, producto_id: str, new_data: dict) -> bool:
+        """
+        Edita todos los atributos de un producto (incluyendo categoría y materiales).
+        """
+        return self.productos_repository.update_product(producto_id, new_data)
+
+    async def delete_product(self, producto_id: str) -> bool:
+        """
+        Elimina un producto completo por su id.
+        """
+        return self.productos_repository.delete_product(producto_id)
 
