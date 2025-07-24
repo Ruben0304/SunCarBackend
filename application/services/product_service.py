@@ -49,12 +49,6 @@ class ProductService:
         """
         return self.productos_repository.create_category(categoria, materiales=[])
 
-    async def delete_material_from_product(self, producto_id: str, material_codigo: str) -> bool:
-        """
-        Elimina un material de un producto por su código.
-        """
-        return self.productos_repository.delete_material_from_product(producto_id, material_codigo)
-
     async def update_material_in_product(self, producto_id: str, material_codigo: str, new_material: dict) -> bool:
         """
         Edita todos los atributos de un material dentro de un producto.
@@ -72,4 +66,10 @@ class ProductService:
         Elimina un producto completo por su id.
         """
         return self.productos_repository.delete_product(producto_id)
+
+    async def delete_material_by_codigo(self, material_codigo: str) -> bool:
+        """
+        Elimina el material con el código dado de todos los productos que lo contengan.
+        """
+        return self.productos_repository.delete_material_by_codigo(material_codigo)
 

@@ -185,17 +185,16 @@ async def editar_producto(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.delete("/{producto_id}/materiales/{material_codigo}", response_model=MaterialDeleteResponse)
+@router.delete("/materiales/{material_codigo}", response_model=MaterialDeleteResponse)
 async def eliminar_material(
-    producto_id: str,
     material_codigo: str,
     product_service: ProductService = Depends(get_product_service)
 ):
     """
-    Eliminar un material de un producto por su código.
+    Eliminar un material de todos los productos por su código.
     """
     try:
-        ok = await product_service.delete_material_from_product(producto_id, material_codigo)
+        ok = await product_service.delete_material_by_codigo(material_codigo)
         if not ok:
             return MaterialDeleteResponse(success=False, message="Material no encontrado o no eliminado")
         return MaterialDeleteResponse(success=True, message="Material eliminado exitosamente")

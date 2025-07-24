@@ -184,19 +184,19 @@ class ProductRepository:
             print(f"❌ Error agregando material a la categoría: {e}")
             raise e
 
-    def delete_material_from_product(self, producto_id: str, material_codigo: str) -> bool:
+    def delete_material_by_codigo(self, material_codigo: str) -> bool:
         """
-        Elimina un material de un producto por su código.
+        Elimina el material con el código dado de todos los productos que lo contengan.
         """
         try:
             collection = get_collection(self.collection_name)
-            result = collection.update_one(
-                {"_id": ObjectId(producto_id)},
+            result = collection.update_many(
+                {"materiales.codigo": material_codigo},
                 {"$pull": {"materiales": {"codigo": material_codigo}}}
             )
             return result.modified_count > 0
         except Exception as e:
-            logger.error(f"❌ Error eliminando material: {e}")
+            logger.error(f"❌ Error eliminando material por código: {e}")
             raise e
 
     def update_material_in_product(self, producto_id: str, material_codigo: str, new_material: dict) -> bool:
