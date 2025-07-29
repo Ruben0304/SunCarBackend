@@ -6,3 +6,5 @@ motor
 python-dotenv
 python-multipart
 supabase
+xhtml2pdf
+jinja2

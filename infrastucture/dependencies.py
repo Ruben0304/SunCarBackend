@@ -121,3 +121,6 @@ def get_brigada_service(
     Dependency for FastAPI that returns an instance of BrigadaService.
     """
     return BrigadaService(brigada_repo)
+
+
+

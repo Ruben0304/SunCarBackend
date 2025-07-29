@@ -13,6 +13,7 @@ from presentation.routers.reportes_router import router as reportes_router
 from presentation.routers.updates_router import router as updates_router
 from presentation.routers.admin_router import router as admin_router
 from presentation.routers.shared_router import router as shared_router
+from presentation.routers.pdf_router import router as pdf_router
 
 from dotenv import load_dotenv
 from presentation.handlers.validation_exception_handler import validation_exception_handler
@@ -88,6 +89,12 @@ app.include_router(
     shared_router,
     prefix="/api",
     tags=["Compartidos"]
+)
+
+app.include_router(
+    pdf_router,
+    prefix="/api/pdf",
+    tags=["PDF"]
 )
 
 if __name__ == "__main__":
