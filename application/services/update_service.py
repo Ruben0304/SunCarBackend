@@ -20,8 +20,8 @@ class UpdateService:
         # Configuración de versiones de app (en producción esto vendría de una BD o config)
         self.app_versions = {
             "android": {
-                "latest_version": "1.0.0",
-                "download_url": "https://example.com/app-v1.2.0.apk",
+                "latest_version": "1.5.0",
+                "download_url": "https://phlticqaakljccwvnlop.supabase.co/storage/v1/object/public/apk//suncar.apk",
                 "file_size": 15728640,  # 15MB
                 "changelog": "Nuevas funcionalidades y correcciones de bugs",
                 "force_update": False,
