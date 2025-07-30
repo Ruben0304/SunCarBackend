@@ -14,6 +14,7 @@ from infrastucture.repositories.productos_repository import ProductRepository
 from infrastucture.repositories.trabajadores_repository import WorkerRepository
 from infrastucture.repositories.reportes_repository import FormRepository  # Nota el plural "repositories"
 from infrastucture.repositories.brigada_repository import BrigadaRepository
+from infrastucture.repositories.update_repository import UpdateRepository
 
 # Global singleton instances for repositories
 product_repository = ProductRepository()
@@ -22,6 +23,7 @@ form_repository = FormRepository()
 brigada_repository = BrigadaRepository()
 client_repository = ClientRepository()
 adjuntos_repository = AdjuntosRepository()
+update_repository = UpdateRepository()
 
 
 # Dependency functions for repositories
@@ -56,9 +58,15 @@ def get_brigada_repository() -> BrigadaRepository:
 
 def get_adjuntos_repository() -> AdjuntosRepository:
     """
-    Dependency for FastAPI that returns the singleton instance of BrigadaRepository.
+    Dependency for FastAPI that returns the singleton instance of AdjuntosRepository.
     """
     return adjuntos_repository
+
+def get_update_repository() -> UpdateRepository:
+    """
+    Dependency for FastAPI that returns the singleton instance of UpdateRepository.
+    """
+    return update_repository
 
 # Dependency functions for services
 def get_product_service(
@@ -106,12 +114,13 @@ def get_auth_service(
 def get_update_service(
         product_service: Annotated[ProductService, Depends(get_product_service)],
         worker_service: Annotated[WorkerService, Depends(get_worker_service)],
-        client_service: Annotated[ClientService, Depends(get_client_service)]
+        client_service: Annotated[ClientService, Depends(get_client_service)],
+        update_repo: Annotated[UpdateRepository, Depends(get_update_repository)]
 ) -> UpdateService:
     """
     Dependency for FastAPI that returns an instance of UpdateService.
     """
-    return UpdateService(product_service, worker_service, client_service)
+    return UpdateService(product_service, worker_service, client_service, update_repo)
 
 
 def get_brigada_service(

@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__MongoDB__list-databases",
+      "Bash(git add:*)"
+    ]
+  },
+  "enableAllProjectMcpServers": true,
+  "enabledMcpjsonServers": [
+    "MongoDB"
+  ]
+}
