@@ -10,7 +10,7 @@ class EmailService:
         # Configuración del servidor de correo (Gmail con datos reales)
         self.config = ConnectionConfig(
             MAIL_USERNAME=os.getenv("MAIL_USERNAME", "rubianclaude@gmail.com"),
-            MAIL_PASSWORD=os.getenv("MAIL_PASSWORD", "agty yehu glgv aalg"),
+            MAIL_PASSWORD=os.getenv("MAIL_PASSWORD"),
             MAIL_FROM=os.getenv("MAIL_FROM", "rubianclaude@gmail.com"),
             MAIL_PORT=587,
             MAIL_SERVER="smtp.gmail.com",
@@ -35,7 +35,7 @@ class EmailService:
         try:
             # Email hardcodeado por el momento (después vendrá de la BD)
             if not destinatario:
-                destinatario = "admin@suncar.com"  # Email hardcodeado
+                destinatario = "hernandzruben9@gmail.com"  # Email hardcodeado
             
             # Crear el mensaje
             message = MessageSchema(
