@@ -14,6 +14,7 @@ from presentation.routers.updates_router import router as updates_router
 from presentation.routers.admin_router import router as admin_router
 from presentation.routers.shared_router import router as shared_router
 from presentation.routers.pdf_router import router as pdf_router
+from presentation.routers.cotizacion_router import router as cotizacion_router
 
 from dotenv import load_dotenv
 from presentation.handlers.validation_exception_handler import validation_exception_handler
@@ -95,6 +96,12 @@ app.include_router(
     pdf_router,
     prefix="/api/pdf",
     tags=["PDF"]
+)
+
+app.include_router(
+    cotizacion_router,
+    prefix="/api",
+    tags=["Cotizaciones"]
 )
 
 if __name__ == "__main__":

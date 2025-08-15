@@ -8,7 +8,7 @@
         "-y",
         "mongodb-mcp-server",
         "--connectionString",
-        "${MONGODB_CONNECTION_STRING:-mongodb+srv://ruben:Zixelowe030417@suncar.1lz6h2b.mongodb.net/}"
+        "mongodb+srv://ruben:%22Zixelowe030417@suncar.1lz6h2b.mongodb.net/"
       ],
       "env": {}
     }

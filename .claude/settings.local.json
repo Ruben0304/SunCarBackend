@@ -2,7 +2,9 @@
   "permissions": {
     "allow": [
       "mcp__MongoDB__list-databases",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git push:*)",
+      "mcp__MongoDB__list-collections"
     ]
   },
   "enableAllProjectMcpServers": true,

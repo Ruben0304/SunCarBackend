@@ -62,7 +62,7 @@ This is a **Clean Architecture** FastAPI application for SunCar company's backen
 - Uses connection pooling with `maxPoolSize=1` for serverless efficiency
 - Connection string from `MONGODB_URL` or `MONGODB_URI` environment variables
 - Database name from `DATABASE_NAME` env var (defaults to "defaultdb")
-- **Production database name**: `SunCar` (for MCP connections)
+- **Production database name**: `SunCar` 
 
 ### API Organization
 All endpoints are prefixed with `/api/` and organized by feature:

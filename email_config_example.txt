@@ -1,0 +1,16 @@
+# Configuración del servidor de correo - EJEMPLO REAL
+# Copia este archivo como .env y configura tus credenciales
+
+MAIL_USERNAME=rubianclaude@gmail.com
+MAIL_PASSWORD=agty yehu glgv aalg
+MAIL_FROM=rubianclaude@gmail.com
+
+# Configuración actual del sistema:
+# - Servidor: smtp.gmail.com
+# - Puerto: 587
+# - TLS: Habilitado
+# - Email hardcodeado: admin@suncar.com
+# - App en Google: "Suncar" ✅
+
+# IMPORTANTE: Esta contraseña es solo para la aplicación "Suncar" en tu cuenta de Google
+# No la uses en ningún otro lugar y mantén tu cuenta segura 
