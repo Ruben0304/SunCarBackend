@@ -43,19 +43,35 @@ class EmailService:
             mapa_html = ""
             if latitud is not None and longitud is not None:
                 mapa_html = f"""
-                    <div style="margin: 20px 0;">
-                        <h3>Ubicación:</h3>
+                    <div style="margin: 20px 0; padding: 15px; border: 2px solid #e0e0e0; border-radius: 8px; background-color: #f9f9f9;">
+                        <h3 style="color: #333; margin-top: 0;">📍 Ubicación de la Cotización</h3>
                         <p><strong>Coordenadas:</strong> {latitud}, {longitud}</p>
-                        <div style="text-align: center; margin: 10px 0;">
-                            <img src="https://maps.googleapis.com/maps/api/staticmap?center={latitud},{longitud}&zoom=15&size=400x300&markers=color:red%7C{latitud},{longitud}&key=AIzaSyBvOkBwgGlbUNt0H_rBpyHay4ZWqQhiMjE" 
-                                 alt="Mapa de ubicación" 
-                                 style="max-width: 100%; height: auto; border: 1px solid #ccc;">
+                        
+                        <div style="background-color: #fff; border: 1px solid #ddd; border-radius: 4px; padding: 10px; margin: 10px 0;">
+                            <p style="margin: 5px 0;"><strong>🌐 Latitud:</strong> {latitud}</p>
+                            <p style="margin: 5px 0;"><strong>🌐 Longitud:</strong> {longitud}</p>
                         </div>
-                        <p style="text-align: center;">
+                        
+                        <div style="text-align: center; margin: 15px 0;">
                             <a href="https://www.google.com/maps?q={latitud},{longitud}" target="_blank" 
-                               style="color: #1a73e8; text-decoration: none;">
-                                Ver en Google Maps
+                               style="display: inline-block; background-color: #1a73e8; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; font-weight: bold;">
+                                🗺️ Ver Ubicación en Google Maps
                             </a>
+                        </div>
+                        
+                        <div style="text-align: center; margin: 10px 0;">
+                            <a href="https://maps.apple.com/?q={latitud},{longitud}" target="_blank" 
+                               style="display: inline-block; background-color: #007aff; color: white; padding: 8px 16px; text-decoration: none; border-radius: 5px; font-size: 14px; margin: 0 5px;">
+                                🍎 Apple Maps
+                            </a>
+                            <a href="https://www.openstreetmap.org/?mlat={latitud}&mlon={longitud}&zoom=15" target="_blank" 
+                               style="display: inline-block; background-color: #7ebc6f; color: white; padding: 8px 16px; text-decoration: none; border-radius: 5px; font-size: 14px; margin: 0 5px;">
+                                🌍 OpenStreetMap
+                            </a>
+                        </div>
+                        
+                        <p style="font-size: 12px; color: #666; text-align: center; margin-bottom: 0;">
+                            Haga clic en cualquier enlace para ver la ubicación en su aplicación de mapas preferida
                         </p>
                     </div>
                 """
