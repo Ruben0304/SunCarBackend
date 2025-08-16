@@ -46,7 +46,7 @@ class EmailService:
                 <body>
                     <h2>Nueva Cotización Recibida</h2>
                     <p><strong>Mensaje:</strong></p>
-                    <p>{mensaje}</p>
+                    <p>{mensaje.replace(chr(10), '<br>')}</p>
                     <br>
                     <p>Este es un mensaje automático del sistema SunCar.</p>
                     <p><small>Enviado desde: rubianclaude@gmail.com</small></p>
