@@ -17,7 +17,11 @@ async def crear_cotizacion(request: CotizacionRequest):
         cotizacion_service = CotizacionService()
         
         # Procesar la cotización
-        resultado = await cotizacion_service.procesar_cotizacion(request.mensaje)
+        resultado = await cotizacion_service.procesar_cotizacion(
+            request.mensaje, 
+            latitud=request.latitud, 
+            longitud=request.longitud
+        )
         
         if resultado["success"]:
             return {

@@ -6,12 +6,14 @@ class CotizacionService:
     def __init__(self):
         self.email_service = EmailService()
 
-    async def procesar_cotizacion(self, mensaje: str) -> dict:
+    async def procesar_cotizacion(self, mensaje: str, latitud: Optional[float] = None, longitud: Optional[float] = None) -> dict:
         """
         Procesa una cotización recibiendo un mensaje, lo muestra en consola y envía por correo.
         
         Args:
             mensaje (str): El mensaje de la cotización
+            latitud (Optional[float]): Latitud de la ubicación
+            longitud (Optional[float]): Longitud de la ubicación
             
         Returns:
             dict: Respuesta con el estado del procesamiento
@@ -20,10 +22,12 @@ class CotizacionService:
             # Mostrar el mensaje en consola
             print(f"=== COTIZACIÓN RECIBIDA ===")
             print(f"Mensaje: {mensaje}")
+            if latitud is not None and longitud is not None:
+                print(f"Coordenadas: {latitud}, {longitud}")
             print(f"==========================")
             
             # Enviar por correo electrónico
-            email_result = await self.email_service.enviar_cotizacion(mensaje)
+            email_result = await self.email_service.enviar_cotizacion(mensaje, latitud=latitud, longitud=longitud)
             
             return {
                 "success": True,
