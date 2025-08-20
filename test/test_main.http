@@ -77,3 +77,7 @@ Accept: application/json
 ### Eliminar contraseña de un trabajador (dejar de ser jefe)
 DELETE http://127.0.0.1:8000/api/trabajadores/03111866789/contrasena
 Accept: application/json
+
+###
+GET http://localhost:8000/api/contactos
+Authorization:suncar-token-2025

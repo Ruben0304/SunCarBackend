@@ -45,6 +45,15 @@ from .reportes_responses import (
 # Updates responses
 from .updates_responses import UpdateStatusResponse
 
+# Contactos responses
+from .contactos_responses import (
+    ContactoCreateResponse,
+    ContactoUpdateResponse,
+    ContactoGetResponse,
+    ContactoListResponse,
+    ContactoDeleteResponse
+)
+
 __all__ = [
     # Auth
     "LoginResponse",
@@ -85,5 +94,12 @@ __all__ = [
     "HoursWorkedResponse",
     
     # Updates
-    "UpdateStatusResponse"
+    "UpdateStatusResponse",
+    
+    # Contactos
+    "ContactoCreateResponse",
+    "ContactoUpdateResponse",
+    "ContactoGetResponse",
+    "ContactoListResponse",
+    "ContactoDeleteResponse"
 ] 

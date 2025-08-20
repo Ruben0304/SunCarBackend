@@ -7,6 +7,7 @@ from application.services.worker_service import WorkerService
 from application.services.form_service import FormService
 from application.services.auth_service import AuthService
 from application.services.update_service import UpdateService
+from application.services.contacto_service import ContactoService
 from infrastucture.repositories.adjuntos_repository import AdjuntosRepository
 from application.services.brigada_service import BrigadaService
 from infrastucture.repositories.client_repository import ClientRepository
@@ -15,6 +16,7 @@ from infrastucture.repositories.trabajadores_repository import WorkerRepository
 from infrastucture.repositories.reportes_repository import FormRepository  # Nota el plural "repositories"
 from infrastucture.repositories.brigada_repository import BrigadaRepository
 from infrastucture.repositories.update_repository import UpdateRepository
+from infrastucture.repositories.contacto_repository import ContactoRepository
 
 # Global singleton instances for repositories
 product_repository = ProductRepository()
@@ -24,6 +26,7 @@ brigada_repository = BrigadaRepository()
 client_repository = ClientRepository()
 adjuntos_repository = AdjuntosRepository()
 update_repository = UpdateRepository()
+contacto_repository = ContactoRepository()
 
 
 # Dependency functions for repositories
@@ -68,6 +71,12 @@ def get_update_repository() -> UpdateRepository:
     """
     return update_repository
 
+def get_contacto_repository() -> ContactoRepository:
+    """
+    Dependency for FastAPI that returns the singleton instance of ContactoRepository.
+    """
+    return contacto_repository
+
 # Dependency functions for services
 def get_product_service(
         product_repo: Annotated[ProductRepository, Depends(get_product_repository)]
@@ -98,6 +107,11 @@ def get_client_service(
         client_repo: Annotated[ClientRepository, Depends(get_client_repository)]
 ) -> ClientService:
     return ClientService(client_repo)
+
+def get_contacto_service(
+        contacto_repo: Annotated[ContactoRepository, Depends(get_contacto_repository)]
+) -> ContactoService:
+    return ContactoService(contacto_repo)
 
 
 
