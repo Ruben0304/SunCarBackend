@@ -4,6 +4,8 @@ from starlette.middleware.cors import CORSMiddleware
 from starlette.responses import JSONResponse
 from starlette.status import HTTP_422_UNPROCESSABLE_ENTITY
 
+from presentation.middleware.auth_middleware import AuthMiddleware
+
 from presentation.routers.auth_router import router as auth_router
 from presentation.routers.trabajadores_router import router as trabajadores_router
 from presentation.routers.brigadas_router import router as brigadas_router
@@ -29,6 +31,8 @@ app = FastAPI(
 load_dotenv()
 
 app.add_exception_handler(RequestValidationError, validation_exception_handler)
+
+app.add_middleware(AuthMiddleware)
 
 app.add_middleware(
     CORSMiddleware,

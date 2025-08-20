@@ -1,3 +1,4 @@
+import os
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 
@@ -17,6 +18,17 @@ class LoginRequest(BaseModel):
 class ChangePasswordRequest(BaseModel):
     ci: str
     nueva_contrasena: str
+
+
+class TokenLoginRequest(BaseModel):
+    usuario: str
+    contrasena: str
+
+
+class TokenResponse(BaseModel):
+    success: bool
+    message: str
+    token: str = None
 
 
 @router.post("/login", response_model=LoginResponse)
@@ -67,4 +79,42 @@ async def cambiar_contrasena(
             message="Contraseña cambiada exitosamente"
         )
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e)) 
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/login-token", response_model=TokenResponse)
+async def login_token(credentials: TokenLoginRequest):
+    """
+    Endpoint para obtener el token de autorización usando credenciales hardcodeadas.
+    Usuario: admin, Contraseña: admin123
+    """
+    # Credenciales hardcodeadas
+    ADMIN_USER = "admin"
+    ADMIN_PASSWORD = "admin123"
+    
+    if credentials.usuario == ADMIN_USER and credentials.contrasena == ADMIN_PASSWORD:
+        token = os.getenv("AUTH_TOKEN", "suncar-token-2025")
+        return TokenResponse(
+            success=True,
+            message="Login exitoso",
+            token=token
+        )
+    else:
+        return TokenResponse(
+            success=False,
+            message="Credenciales incorrectas",
+            token=None
+        )
+
+
+@router.get("/validate")
+async def validate_token():
+    """
+    Endpoint para validar el token de autorización.
+    Si el middleware permite llegar aquí, el token es válido.
+    """
+    return {
+        "success": True,
+        "message": "Token válido",
+        "token": os.getenv("AUTH_TOKEN", "suncar-token-2025")
+    } 
