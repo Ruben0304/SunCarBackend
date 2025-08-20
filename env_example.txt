@@ -1,0 +1,14 @@
+# Configuración de entorno - EJEMPLO
+# Copia este archivo como .env y configura tus variables
+
+# Token de autenticación para la API
+AUTH_TOKEN=suncar-token-2025
+
+# Configuración de MongoDB
+MONGODB_URL=mongodb://localhost:27017
+DATABASE_NAME=SunCar
+
+# Configuración del servidor de correo (opcional)
+MAIL_USERNAME=tu_email@gmail.com
+MAIL_PASSWORD=tu_password_de_aplicacion
+MAIL_FROM=tu_email@gmail.com
