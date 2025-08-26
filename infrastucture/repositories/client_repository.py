@@ -85,3 +85,19 @@ class ClientRepository:
         except Exception as e:
             self.logger.error(f"Error al obtener clientes: {e}")
             raise
+
+    def delete_client(self, numero: str) -> bool:
+        """
+        Eliminar un cliente por su número.
+        Retorna True si se eliminó correctamente, False si no se encontró.
+        """
+        collection = get_collection(self.collection_name)
+        self.logger.info(f"Eliminando cliente con número: {numero}")
+        try:
+            result = collection.delete_one({"numero": numero})
+            deleted = result.deleted_count > 0
+            self.logger.info(f"Cliente eliminado: {deleted}")
+            return deleted
+        except Exception as e:
+            self.logger.error(f"Error al eliminar cliente: {e}")
+            raise

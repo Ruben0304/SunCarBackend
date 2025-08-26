@@ -68,3 +68,16 @@ class ClientService:
 
     def update_client_partial(self, numero: str, update_data: dict) -> bool:
         return self._client_repository.update_client_partial(numero, update_data)
+
+    def delete_client(self, numero: str) -> bool:
+        """
+        Eliminar un cliente por su número.
+        """
+        self.logger.info(f"Eliminando cliente: {numero}")
+        try:
+            result = self._client_repository.delete_client(numero)
+            self.logger.info(f"Cliente eliminado: {result}")
+            return result
+        except Exception as e:
+            self.logger.error(f"Error al eliminar cliente: {e}")
+            raise

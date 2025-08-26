@@ -118,4 +118,23 @@ def actualizar_cliente_parcial(
             return {"success": False, "message": "Cliente no encontrado o sin cambios"}
     except Exception as e:
         logger.error(f"Error en actualizar_cliente_parcial: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.delete("/{numero}", summary="Eliminar cliente")
+def eliminar_cliente(
+    numero: str,
+    client_service: ClientService = Depends(get_client_service)
+):
+    """
+    Elimina un cliente por su número.
+    """
+    try:
+        deleted = client_service.delete_client(numero)
+        if deleted:
+            return {"success": True, "message": "Cliente eliminado correctamente"}
+        else:
+            return {"success": False, "message": "Cliente no encontrado"}
+    except Exception as e:
+        logger.error(f"Error en eliminar_cliente: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e)) 
