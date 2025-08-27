@@ -49,24 +49,27 @@ class ClientRepository:
             self.logger.error(f"Error al buscar cliente: {e}")
             raise
 
-    def find_client_by_identifier(self, identifier: str) -> Optional[Cliente]:
+    def find_client_by_identifier(self, identifier: str) -> Optional[dict]:
         """
         Buscar un cliente por número de cliente o teléfono.
-        Retorna el cliente si existe, None si no existe.
+        Retorna solo numero y nombre si existe, None si no existe.
         """
         collection = get_collection(self.collection_name)
         self.logger.info(f"Buscando cliente por identificador: {identifier}")
         try:
-            # Buscar por número de cliente o teléfono
-            cliente_doc = collection.find_one({
-                "$or": [
-                    {"numero": identifier},
-                    {"telefono": identifier}
-                ]
-            })
+            # Buscar por número de cliente o teléfono, proyectar solo numero y nombre
+            cliente_doc = collection.find_one(
+                {
+                    "$or": [
+                        {"numero": identifier},
+                        {"telefono": identifier}
+                    ]
+                },
+                {"numero": 1, "nombre": 1, "_id": 0}  # Solo proyectar numero y nombre
+            )
             if cliente_doc:
                 self.logger.info(f"Cliente encontrado: {cliente_doc}")
-                return Cliente.model_validate(cliente_doc)
+                return cliente_doc
             self.logger.info("Cliente no encontrado")
             return None
         except Exception as e:

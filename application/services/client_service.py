@@ -89,13 +89,8 @@ class ClientService:
         """
         self.logger.info(f"Verificando cliente por identificador: {identifier}")
         try:
-            cliente = self._client_repository.find_client_by_identifier(identifier)
-            if cliente:
-                return {
-                    "numero": cliente.numero,
-                    "nombre": cliente.nombre
-                }
-            return None
+            cliente_data = self._client_repository.find_client_by_identifier(identifier)
+            return cliente_data  # Ya viene filtrado con solo numero y nombre
         except Exception as e:
             self.logger.error(f"Error al verificar cliente por identificador: {e}")
             raise
