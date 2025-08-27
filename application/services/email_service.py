@@ -9,7 +9,7 @@ class EmailService:
     def __init__(self):
         # Configuración del servidor de correo (Gmail con datos reales)
         self.config = ConnectionConfig(
-            MAIL_USERNAME=os.getenv("MAIL_USERNAME", "rubianclaude@gmail.com"),
+            MAIL_USERNAME=os.getenv("MAIL_USERNAME", "alexandercalero42@gmail.com"),
             MAIL_PASSWORD=os.getenv("MAIL_PASSWORD"),
             MAIL_FROM=os.getenv("MAIL_FROM", "rubianclaude@gmail.com"),
             MAIL_PORT=587,

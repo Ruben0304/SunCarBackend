@@ -8,8 +8,9 @@ from application.services.client_service import ClientService
 from infrastucture.dependencies import get_client_service
 from domain.entities.cliente import Cliente
 from presentation.schemas.requests.ClienteCreateRequest import ClienteCreateRequest, ClienteCreateSimpleRequest
-from presentation.schemas.responses import ClienteCreateResponse, ClienteVerifyResponse
+from presentation.schemas.responses import ClienteCreateResponse, ClienteVerifyResponse, ClienteVerifyByIdentifierResponse
 from presentation.schemas.requests.ClienteUpdateRequest import ClienteUpdateRequest
+from presentation.schemas.requests.ClienteVerifyRequest import ClienteVerifyRequest
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -119,6 +120,59 @@ def actualizar_cliente_parcial(
     except Exception as e:
         logger.error(f"Error en actualizar_cliente_parcial: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/verificar", response_model=ClienteVerifyByIdentifierResponse, summary="Verificar cliente por teléfono o número")
+def verificar_cliente_por_identificador(
+    verify_request: ClienteVerifyRequest,
+    client_service: ClientService = Depends(get_client_service)
+):
+    """
+    Verificar si existe un cliente por número de cliente o teléfono.
+    
+    - **identifier**: Puede ser el número de cliente o el teléfono del cliente
+    
+    **Respuesta exitosa**: Retorna número de cliente y nombre
+    **Respuesta de error**: Mensaje detallado si el cliente no existe
+    
+    **Ejemplo de uso desde frontend:**
+    ```javascript
+    // Verificar por número de cliente
+    const response = await fetch('/api/clientes/verificar', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ identifier: "CLIENTE001" })
+    });
+    
+    // Verificar por teléfono
+    const response = await fetch('/api/clientes/verificar', {
+        method: 'POST', 
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ identifier: "555-1234" })
+    });
+    ```
+    """
+    try:
+        cliente_info = client_service.verify_client_by_identifier(verify_request.identifier)
+        if cliente_info:
+            return ClienteVerifyByIdentifierResponse(
+                success=True,
+                message="Cliente encontrado exitosamente",
+                data=cliente_info
+            )
+        else:
+            return ClienteVerifyByIdentifierResponse(
+                success=False,
+                message=f"No se encontró ningún cliente con el identificador: {verify_request.identifier}. Verifica que el número de cliente o teléfono sea correcto.",
+                data=None
+            )
+    except Exception as e:
+        logger.error(f"Error en verificar_cliente_por_identificador: {e}", exc_info=True)
+        return ClienteVerifyByIdentifierResponse(
+            success=False,
+            message=f"Error interno del servidor al verificar el cliente: {str(e)}",
+            data=None
+        )
 
 
 @router.delete("/{numero}", summary="Eliminar cliente")

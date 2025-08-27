@@ -81,3 +81,21 @@ class ClientService:
         except Exception as e:
             self.logger.error(f"Error al eliminar cliente: {e}")
             raise
+
+    def verify_client_by_identifier(self, identifier: str) -> Optional[dict]:
+        """
+        Verifica si existe un cliente por número de cliente o teléfono.
+        Retorna solo el número de cliente y nombre si se encuentra.
+        """
+        self.logger.info(f"Verificando cliente por identificador: {identifier}")
+        try:
+            cliente = self._client_repository.find_client_by_identifier(identifier)
+            if cliente:
+                return {
+                    "numero": cliente.numero,
+                    "nombre": cliente.nombre
+                }
+            return None
+        except Exception as e:
+            self.logger.error(f"Error al verificar cliente por identificador: {e}")
+            raise

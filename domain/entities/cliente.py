@@ -7,4 +7,5 @@ class Cliente(BaseModel):
     nombre: str
     direccion: str
     latitud: str
-    longitud: str 
+    longitud: str
+    telefono: Optional[str] = None 

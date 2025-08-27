@@ -22,7 +22,7 @@ from .trabajadores_responses import (
 )
 
 # Clientes responses
-from .clientes_responses import ClienteCreateResponse, ClienteVerifyResponse
+from .clientes_responses import ClienteCreateResponse, ClienteVerifyResponse, ClienteVerifyByIdentifierResponse
 
 # Productos responses
 from .productos_responses import (
@@ -78,6 +78,7 @@ __all__ = [
     # Clientes
     "ClienteCreateResponse",
     "ClienteVerifyResponse",
+    "ClienteVerifyByIdentifierResponse",
     
     # Productos
     "ProductoListResponse",

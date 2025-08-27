@@ -12,4 +12,10 @@ class ClienteCreateResponse(BaseModel):
 class ClienteVerifyResponse(BaseModel):
     success: bool
     message: str
-    data: Optional[dict] = None 
+    data: Optional[dict] = None
+
+
+class ClienteVerifyByIdentifierResponse(BaseModel):
+    success: bool
+    message: str
+    data: Optional[dict] = None  # {numero: str, nombre: str} if found 
