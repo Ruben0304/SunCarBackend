@@ -1,5 +1,6 @@
 from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from starlette.middleware.cors import CORSMiddleware
 from starlette.responses import JSONResponse
 from starlette.status import HTTP_422_UNPROCESSABLE_ENTITY
@@ -28,6 +29,46 @@ app = FastAPI(
     description="API con arquitectura limpia de la empresa SunCar",
     version="1.0.0"
 )
+
+# Esquema de seguridad para Swagger UI
+security = HTTPBearer()
+
+# Configurar autenticación global para Swagger
+app.openapi_schema = None
+
+def get_openapi():
+    if app.openapi_schema:
+        return app.openapi_schema
+    
+    from fastapi.openapi.utils import get_openapi
+    openapi_schema = get_openapi(
+        title="SunCar Backend",
+        version="1.0.0",
+        description="API con arquitectura limpia de la empresa SunCar",
+        routes=app.routes,
+    )
+    
+    # Agregar esquema de seguridad Bearer Token
+    openapi_schema["components"]["securitySchemes"] = {
+        "BearerAuth": {
+            "type": "http",
+            "scheme": "bearer",
+            "bearerFormat": "string"
+        }
+    }
+    
+    # Aplicar seguridad global a todos los endpoints excepto los excluidos
+    excluded_paths = ["/api/auth/login", "/api/auth/login-token"]
+    for path, methods in openapi_schema["paths"].items():
+        if path not in excluded_paths:
+            for method, operation in methods.items():
+                if method != "parameters":
+                    operation.setdefault("security", [{"BearerAuth": []}])
+    
+    app.openapi_schema = openapi_schema
+    return app.openapi_schema
+
+app.openapi = get_openapi
 
 # Cargar variables de entorno del archivo .env
 load_dotenv()
