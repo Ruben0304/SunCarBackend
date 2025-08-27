@@ -8,7 +8,9 @@ from application.services.form_service import FormService
 from application.services.auth_service import AuthService
 from application.services.update_service import UpdateService
 from application.services.contacto_service import ContactoService
+from application.services.chat_service import ChatService
 from infrastucture.repositories.adjuntos_repository import AdjuntosRepository
+from infrastucture.external_services.gemini_provider import GeminiProvider
 from application.services.brigada_service import BrigadaService
 from infrastucture.repositories.client_repository import ClientRepository
 from infrastucture.repositories.productos_repository import ProductRepository
@@ -27,6 +29,9 @@ client_repository = ClientRepository()
 adjuntos_repository = AdjuntosRepository()
 update_repository = UpdateRepository()
 contacto_repository = ContactoRepository()
+
+# Global singleton instances for external services
+gemini_provider = GeminiProvider()
 
 
 # Dependency functions for repositories
@@ -144,6 +149,23 @@ def get_brigada_service(
     Dependency for FastAPI that returns an instance of BrigadaService.
     """
     return BrigadaService(brigada_repo)
+
+
+# Dependency functions for external services
+def get_gemini_provider() -> GeminiProvider:
+    """
+    Dependency for FastAPI that returns the singleton instance of GeminiProvider.
+    """
+    return gemini_provider
+
+
+def get_chat_service(
+        gemini_prov: Annotated[GeminiProvider, Depends(get_gemini_provider)]
+) -> ChatService:
+    """
+    Dependency for FastAPI that returns an instance of ChatService.
+    """
+    return ChatService(gemini_prov)
 
 
 

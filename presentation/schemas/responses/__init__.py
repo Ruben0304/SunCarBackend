@@ -54,6 +54,9 @@ from .contactos_responses import (
     ContactoDeleteResponse
 )
 
+# Chat responses
+from .chat_responses import ChatResponse
+
 __all__ = [
     # Auth
     "LoginResponse",
@@ -102,5 +105,8 @@ __all__ = [
     "ContactoUpdateResponse",
     "ContactoGetResponse",
     "ContactoListResponse",
-    "ContactoDeleteResponse"
+    "ContactoDeleteResponse",
+    
+    # Chat
+    "ChatResponse"
 ] 

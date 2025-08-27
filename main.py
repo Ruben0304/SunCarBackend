@@ -18,6 +18,7 @@ from presentation.routers.shared_router import router as shared_router
 from presentation.routers.pdf_router import router as pdf_router
 from presentation.routers.cotizacion_router import router as cotizacion_router
 from presentation.routers.contactos_router import router as contactos_router
+from presentation.routers.chat_router import router as chat_router
 
 from dotenv import load_dotenv
 from presentation.handlers.validation_exception_handler import validation_exception_handler
@@ -113,6 +114,12 @@ app.include_router(
     contactos_router,
     prefix="/api/contactos",
     tags=["Contactos"]
+)
+
+app.include_router(
+    chat_router,
+    prefix="/api/chat",
+    tags=["Chat LLM"]
 )
 
 if __name__ == "__main__":
