@@ -82,6 +82,24 @@ class ContactoRepository:
             self.logger.error(f"Error al obtener contactos: {e}")
             raise
 
+    def get_first_contacto(self) -> Optional[Contacto]:
+        """
+        Obtener el primer contacto de la base de datos.
+        """
+        collection = get_collection(self.collection_name)
+        self.logger.info("Obteniendo el primer contacto")
+        try:
+            contacto_doc = collection.find_one()
+            if contacto_doc:
+                contacto_doc["id"] = str(contacto_doc.pop("_id"))
+                self.logger.info(f"Primer contacto encontrado: {contacto_doc}")
+                return Contacto.model_validate(contacto_doc)
+            self.logger.info("No se encontraron contactos")
+            return None
+        except Exception as e:
+            self.logger.error(f"Error al obtener el primer contacto: {e}")
+            raise
+
     def delete_contacto(self, contacto_id: str) -> bool:
         """
         Eliminar un contacto por su ID.

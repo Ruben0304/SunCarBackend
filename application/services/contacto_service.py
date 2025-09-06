@@ -61,6 +61,19 @@ class ContactoService:
             self.logger.error(f"Error al obtener contactos: {e}")
             raise
 
+    def get_first_contacto(self) -> Optional[Contacto]:
+        """
+        Obtener el primer contacto de la base de datos.
+        """
+        self.logger.info("Obteniendo el primer contacto")
+        try:
+            contacto = self._contacto_repository.get_first_contacto()
+            self.logger.info(f"Primer contacto obtenido: {contacto}")
+            return contacto
+        except Exception as e:
+            self.logger.error(f"Error al obtener el primer contacto: {e}")
+            raise
+
     def delete_contacto(self, contacto_id: str) -> bool:
         """
         Eliminar un contacto por su ID.
