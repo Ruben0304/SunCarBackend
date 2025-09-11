@@ -3,7 +3,7 @@ from fastapi import Request, HTTPException, status
 from fastapi.responses import JSONResponse
 from starlette.middleware.base import BaseHTTPMiddleware
 
-AUTH_TOKEN = os.getenv("AUTH_TOKEN", "suncar-token-2025")
+AUTH_TOKEN = os.getenv("AUTH_TOKEN")
 
 class AuthMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
@@ -21,6 +21,13 @@ class AuthMiddleware(BaseHTTPMiddleware):
         # Verificar si la ruta está excluida
         if request.url.path in excluded_paths:
             return await call_next(request)
+        
+        # Verificar que el token esté configurado
+        if not AUTH_TOKEN:
+            return JSONResponse(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                content={"detail": "Token de autorización no configurado en el servidor"}
+            )
         
         # Verificar token en header Authorization
         auth_header = request.headers.get("Authorization")

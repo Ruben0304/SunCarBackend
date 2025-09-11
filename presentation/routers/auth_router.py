@@ -85,15 +85,28 @@ async def cambiar_contrasena(
 @router.post("/login-token", response_model=TokenResponse)
 async def login_token(credentials: TokenLoginRequest):
     """
-    Endpoint para obtener el token de autorización usando credenciales hardcodeadas.
-    Usuario: admin, Contraseña: admin123
+    Endpoint para obtener el token de autorización usando credenciales de administración.
+    Las credenciales se obtienen de variables de entorno.
     """
-    # Credenciales hardcodeadas
-    ADMIN_USER = "admin"
-    ADMIN_PASSWORD = "admin123"
+    # Credenciales desde variables de entorno
+    ADMIN_USER = os.getenv("ADMIN_USER")
+    ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD")
+    
+    if not ADMIN_USER or not ADMIN_PASSWORD:
+        return TokenResponse(
+            success=False,
+            message="Configuración de credenciales no disponible",
+            token=None
+        )
     
     if credentials.usuario == ADMIN_USER and credentials.contrasena == ADMIN_PASSWORD:
-        token = os.getenv("AUTH_TOKEN", "suncar-token-2025")
+        token = os.getenv("AUTH_TOKEN")
+        if not token:
+            return TokenResponse(
+                success=False,
+                message="Token de autorización no configurado",
+                token=None
+            )
         return TokenResponse(
             success=True,
             message="Login exitoso",
@@ -116,5 +129,5 @@ async def validate_token():
     return {
         "success": True,
         "message": "Token válido",
-        "token": os.getenv("AUTH_TOKEN", "suncar-token-2025")
+        "token": os.getenv("AUTH_TOKEN")
     } 
