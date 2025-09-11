@@ -2,7 +2,7 @@ import os
 import uuid
 from minio import Minio
 from minio.error import S3Error
-from urllib.parse import urljoin
+from urllib.parse import urlparse
 
 _minio_client = None
 
@@ -17,11 +17,22 @@ def get_minio_client() -> Minio:
         if not MINIO_ENDPOINT or not MINIO_ACCESS_KEY or not MINIO_SECRET_KEY:
             raise Exception("MINIO_ENDPOINT, MINIO_ACCESS_KEY and MINIO_SECRET_KEY must be set in environment variables")
         
+        # Parse endpoint to extract host and determine if secure
+        parsed_url = urlparse(MINIO_ENDPOINT)
+        if parsed_url.scheme:
+            # Endpoint includes protocol (e.g., http://host:port)
+            endpoint_host = parsed_url.netloc
+            secure = parsed_url.scheme == 'https'
+        else:
+            # Endpoint is just host:port
+            endpoint_host = MINIO_ENDPOINT
+            secure = MINIO_SECURE
+        
         _minio_client = Minio(
-            MINIO_ENDPOINT,
+            endpoint_host,
             access_key=MINIO_ACCESS_KEY,
             secret_key=MINIO_SECRET_KEY,
-            secure=MINIO_SECURE
+            secure=secure
         )
     return _minio_client
 
@@ -55,10 +66,23 @@ async def upload_file_to_minio(file_content: bytes, original_filename: str, cont
         
         # Generate public URL
         MINIO_ENDPOINT = os.getenv("MINIO_ENDPOINT")
-        MINIO_SECURE = os.getenv("MINIO_SECURE", "False").lower() == "true"
-        protocol = "https" if MINIO_SECURE else "http"
+        MINIO_PUBLIC_ENDPOINT = os.getenv("MINIO_PUBLIC_ENDPOINT", MINIO_ENDPOINT)
         
-        public_url = f"{protocol}://{MINIO_ENDPOINT}/{BUCKET_NAME}/{unique_filename}"
+        # Use public endpoint if available, otherwise use private endpoint
+        endpoint_for_url = MINIO_PUBLIC_ENDPOINT
+        
+        # Parse endpoint to construct proper URL
+        parsed_url = urlparse(endpoint_for_url)
+        if parsed_url.scheme:
+            # Endpoint already includes protocol
+            base_url = endpoint_for_url.rstrip('/')
+        else:
+            # Endpoint is just host:port, add protocol
+            MINIO_SECURE = os.getenv("MINIO_SECURE", "False").lower() == "true"
+            protocol = "https" if MINIO_SECURE else "http"
+            base_url = f"{protocol}://{endpoint_for_url}"
+        
+        public_url = f"{base_url}/{BUCKET_NAME}/{unique_filename}"
         return public_url
         
     except S3Error as e:
