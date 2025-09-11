@@ -10,3 +10,4 @@ xhtml2pdf
 jinja2
 fastapi-mail
 google-genai
+minio
