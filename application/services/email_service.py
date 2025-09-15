@@ -24,20 +24,20 @@ class EmailService:
     async def enviar_cotizacion(self, mensaje: str, destinatario: str = None, latitud: Optional[float] = None, longitud: Optional[float] = None) -> dict:
         """
         Envía una cotización por correo electrónico.
-        
+
         Args:
             mensaje (str): El mensaje de la cotización
-            destinatario (str): Email del destinatario (por defecto usa el hardcodeado)
+            destinatario (str): Email del destinatario (por defecto usa el de la variable de entorno)
             latitud (Optional[float]): Latitud de la ubicación para mostrar mapa
             longitud (Optional[float]): Longitud de la ubicación para mostrar mapa
-            
+
         Returns:
             dict: Respuesta con el estado del envío
         """
         try:
-            # Email hardcodeado por el momento (después vendrá de la BD)
+            # Email desde variable de entorno
             if not destinatario:
-                destinatario = "hernandzruben9@gmail.com"  # Email hardcodeado
+                destinatario = os.getenv("MAIL_TO", "hernandzruben9@gmail.com")
             
             # Generar contenido del mapa si hay coordenadas
             mapa_html = ""
