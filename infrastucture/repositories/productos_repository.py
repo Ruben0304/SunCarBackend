@@ -169,6 +169,16 @@ class ProductRepository:
             else:
                 material_dict = material
 
+            # Asegurar que el código se almacene como número si es numérico
+            try:
+                if isinstance(material_dict, dict) and "codigo" in material_dict:
+                    # Si viene como string numérica, convertir a int para coincidir con documentos históricos
+                    if isinstance(material_dict["codigo"], str) and material_dict["codigo"].isdigit():
+                        material_dict["codigo"] = int(material_dict["codigo"])
+            except Exception:
+                # Si no se puede convertir, dejar como está
+                pass
+
             print(f"[DEBUG] material_dict: {material_dict}")
 
             # Actualizar el producto por su _id
@@ -190,9 +200,17 @@ class ProductRepository:
         """
         try:
             collection = get_collection(self.collection_name)
+            # Preparar variantes de tipo para coincidencia robusta (string o int)
+            codigos_posibles = [material_codigo]
+            try:
+                codigo_int = int(material_codigo)
+                codigos_posibles.append(codigo_int)
+            except (ValueError, TypeError):
+                pass
+
             result = collection.update_many(
-                {"materiales.codigo": material_codigo},
-                {"$pull": {"materiales": {"codigo": material_codigo}}}
+                {"$or": [{"materiales.codigo": c} for c in codigos_posibles]},
+                {"$pull": {"materiales": {"codigo": {"$in": codigos_posibles}}}}
             )
             return result.modified_count > 0
         except Exception as e:
@@ -205,8 +223,23 @@ class ProductRepository:
         """
         try:
             collection = get_collection(self.collection_name)
+            # Normalizar el código del nuevo material si corresponde
+            try:
+                if isinstance(new_material, dict) and "codigo" in new_material and isinstance(new_material["codigo"], str) and new_material["codigo"].isdigit():
+                    new_material["codigo"] = int(new_material["codigo"])
+            except Exception:
+                pass
+
+            # El filtro debe contemplar ambos tipos (string e int) para el material a reemplazar
+            codigos_posibles = [material_codigo]
+            try:
+                codigo_int = int(material_codigo)
+                codigos_posibles.append(codigo_int)
+            except (ValueError, TypeError):
+                pass
+
             result = collection.update_one(
-                {"_id": ObjectId(producto_id), "materiales.codigo": material_codigo},
+                {"_id": ObjectId(producto_id), "$or": [{"materiales.codigo": c} for c in codigos_posibles]},
                 {"$set": {"materiales.$": new_material}}
             )
             return result.modified_count > 0
