@@ -1,7 +1,8 @@
 import asyncio
 import os
-from typing import Optional
+from typing import Optional, AsyncGenerator
 from google import genai
+from google.genai import types
 
 
 class GeminiProvider:
@@ -19,55 +20,124 @@ class GeminiProvider:
             return await self._chat_sync(model, prompt, system_prompt)
     
     async def _chat_streaming(self, model: str, prompt: str, system_prompt: Optional[str] = None) -> str:
-        full_response = ""
-        
         def sync_streaming():
             result = ""
-            contents = []
-            if system_prompt:
-                contents.append(system_prompt)
-            contents.append(prompt)
+            config = None
             
+            # Configure system instruction if provided
+            if system_prompt:
+                config = types.GenerateContentConfig(
+                    system_instruction=system_prompt
+                )
+            
+            # Generate content with streaming
             for chunk in self.client.models.generate_content_stream(
                 model=model,
-                contents=contents,
+                contents=prompt,
+                config=config
             ):
-                chunk_text = ""
                 if hasattr(chunk, 'text') and chunk.text:
-                    chunk_text = chunk.text
-                elif hasattr(chunk, 'candidates') and chunk.candidates:
-                    candidate = chunk.candidates[0]
-                    if hasattr(candidate, 'content') and candidate.content:
-                        if hasattr(candidate.content, 'parts') and candidate.content.parts:
-                            for part in candidate.content.parts:
-                                if hasattr(part, 'text') and part.text:
-                                    chunk_text += part.text
-                
-                if chunk_text:
-                    result += chunk_text
+                    result += chunk.text
             return result
         
-        full_response = await asyncio.to_thread(sync_streaming)
-        return full_response
+        return await asyncio.to_thread(sync_streaming)
     
     async def _chat_sync(self, model: str, prompt: str, system_prompt: Optional[str] = None) -> str:
         def sync_chat():
-            contents = []
+            config = None
+            
+            # Configure system instruction if provided
             if system_prompt:
-                contents.append(system_prompt)
-            contents.append(prompt)
+                config = types.GenerateContentConfig(
+                    system_instruction=system_prompt
+                )
             
             response = self.client.models.generate_content(
                 model=model,
-                contents=contents,
+                contents=prompt,
+                config=config
             )
-            if hasattr(response, 'candidates') and response.candidates:
+            
+            # Extract text from response
+            if hasattr(response, 'text') and response.text:
+                return response.text
+            elif hasattr(response, 'candidates') and response.candidates:
                 candidate = response.candidates[0]
                 if hasattr(candidate, 'content') and candidate.content:
                     if hasattr(candidate.content, 'parts') and candidate.content.parts:
                         return candidate.content.parts[0].text
-            if hasattr(response, 'text'):
-                return response.text
+            
             return str(response)
         
         return await asyncio.to_thread(sync_chat)
+    
+    async def chat_stream(self, model: str, prompt: str, system_prompt: Optional[str] = None) -> AsyncGenerator[str, None]:
+        """
+        Genera contenido en streaming, produciendo chunks de texto en tiempo real
+        
+        Args:
+            model: Modelo a usar
+            prompt: Prompt del usuario
+            system_prompt: Prompt del sistema (opcional)
+            
+        Yields:
+            Chunks de texto conforme se generan
+        """
+        import queue
+        import threading
+        
+        # Cola para pasar chunks del hilo sincrónico al async
+        chunk_queue = asyncio.Queue()
+        exception_holder = [None]
+        
+        def sync_streaming():
+            try:
+                config = None
+                
+                # Configure system instruction if provided
+                if system_prompt:
+                    config = types.GenerateContentConfig(
+                        system_instruction=system_prompt
+                    )
+                
+                # Generate content with streaming
+                for chunk in self.client.models.generate_content_stream(
+                    model=model,
+                    contents=prompt,
+                    config=config
+                ):
+                    if hasattr(chunk, 'text') and chunk.text:
+                        # Poner chunk en la cola de manera thread-safe
+                        asyncio.run_coroutine_threadsafe(
+                            chunk_queue.put(chunk.text), 
+                            asyncio.get_event_loop()
+                        )
+                
+                # Señal de que terminó
+                asyncio.run_coroutine_threadsafe(
+                    chunk_queue.put(None), 
+                    asyncio.get_event_loop()
+                )
+                
+            except Exception as e:
+                exception_holder[0] = e
+                asyncio.run_coroutine_threadsafe(
+                    chunk_queue.put(None), 
+                    asyncio.get_event_loop()
+                )
+        
+        # Ejecutar streaming en un hilo separado
+        thread = threading.Thread(target=sync_streaming)
+        thread.start()
+        
+        try:
+            # Yield chunks conforme llegan
+            while True:
+                chunk = await chunk_queue.get()
+                if chunk is None:  # Señal de finalización
+                    break
+                if exception_holder[0]:
+                    raise exception_holder[0]
+                yield chunk
+        finally:
+            thread.join()

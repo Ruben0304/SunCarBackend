@@ -59,6 +59,30 @@ def listar_contactos(
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@router.get("/first", response_model=ContactoGetResponse, tags=["Contactos"])
+def obtener_primer_contacto(
+    contacto_service: ContactoService = Depends(get_contacto_service)
+):
+    """
+    Obtener el primer contacto de la base de datos.
+    """
+    try:
+        contacto = contacto_service.get_first_contacto()
+        if not contacto:
+            raise HTTPException(status_code=404, detail="No se encontraron contactos")
+        
+        return ContactoGetResponse(
+            success=True,
+            message="Primer contacto encontrado",
+            data=contacto
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error en obtener_primer_contacto: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @router.get("/{contacto_id}", response_model=ContactoGetResponse, tags=["Contactos"])
 def obtener_contacto(
     contacto_id: str,

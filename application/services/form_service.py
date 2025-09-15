@@ -2,7 +2,6 @@ from typing import List
 from domain.entities.form import Form
 from infrastucture.repositories.reportes_repository import FormRepository
 from infrastucture.repositories.adjuntos_repository import AdjuntosRepository
-from infrastucture.external_services.supabase_uploader import upload_file_to_supabase
 
 
 class FormService:

@@ -6,6 +6,6 @@ class Cliente(BaseModel):
     numero: str
     nombre: str
     direccion: str
-    latitud: str
-    longitud: str
+    latitud: Optional[float] = None
+    longitud: Optional[float] = None
     telefono: Optional[str] = None 

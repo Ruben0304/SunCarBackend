@@ -19,7 +19,7 @@ from presentation.schemas.responses import (
 from domain.entities.form import Form as FormEntity
 import base64
 import json
-from infrastucture.external_services.supabase_uploader import upload_file_to_supabase
+from infrastucture.external_services.minio_uploader import upload_file_to_minio
 from presentation.schemas.responses.reportes_responses import (
     MaterialesUsadosBrigadaResponse,
     MaterialesUsadosTodasBrigadasResponse
@@ -73,13 +73,13 @@ async def create_inversion_report(
         cliente_dict = json.loads(cliente)
         fecha_hora_dict = json.loads(fecha_hora)
 
-        # Subir fotos a Supabase y obtener URLs solo si existen
+        # Subir fotos a MinIO y obtener URLs solo si existen
         adjuntos = {}
         if fotos_inicio:
             fotos_inicio_urls = []
             for file in fotos_inicio:
                 content = await file.read()
-                url = await upload_file_to_supabase(content, file.filename, file.content_type)
+                url = await upload_file_to_minio(content, file.filename, file.content_type)
                 fotos_inicio_urls.append(url)
             if fotos_inicio_urls:
                 adjuntos["fotos_inicio"] = fotos_inicio_urls
@@ -87,13 +87,13 @@ async def create_inversion_report(
             fotos_fin_urls = []
             for file in fotos_fin:
                 content = await file.read()
-                url = await upload_file_to_supabase(content, file.filename, file.content_type)
+                url = await upload_file_to_minio(content, file.filename, file.content_type)
                 fotos_fin_urls.append(url)
             if fotos_fin_urls:
                 adjuntos["fotos_fin"] = fotos_fin_urls
         if firma_cliente:
             content = await firma_cliente.read()
-            url = await upload_file_to_supabase(content, firma_cliente.filename, firma_cliente.content_type)
+            url = await upload_file_to_minio(content, firma_cliente.filename, firma_cliente.content_type)
             adjuntos["firma_cliente"] = url
 
         request_data = {
@@ -172,17 +172,17 @@ async def create_averia_report(
         cliente_dict = json.loads(cliente)
         fecha_hora_dict = json.loads(fecha_hora)
 
-        # Subir fotos a Supabase y obtener URLs
+        # Subir fotos a MinIO y obtener URLs
         fotos_inicio_urls = []
         for file in fotos_inicio:
             content = await file.read()
-            url = await upload_file_to_supabase(content, file.filename, file.content_type)
+            url = await upload_file_to_minio(content, file.filename, file.content_type)
             fotos_inicio_urls.append(url)
 
         fotos_fin_urls = []
         for file in fotos_fin:
             content = await file.read()
-            url = await upload_file_to_supabase(content, file.filename, file.content_type)
+            url = await upload_file_to_minio(content, file.filename, file.content_type)
             fotos_fin_urls.append(url)
 
         adjuntos = {
@@ -191,7 +191,7 @@ async def create_averia_report(
         }
         if firma_cliente:
             content = await firma_cliente.read()
-            url = await upload_file_to_supabase(content, firma_cliente.filename, firma_cliente.content_type)
+            url = await upload_file_to_minio(content, firma_cliente.filename, firma_cliente.content_type)
             adjuntos["firma_cliente"] = url
 
         request_data = {
@@ -271,17 +271,17 @@ async def create_mantenimiento_report(
         cliente_dict = json.loads(cliente)
         fecha_hora_dict = json.loads(fecha_hora)
 
-        # Subir fotos a Supabase y obtener URLs
+        # Subir fotos a MinIO y obtener URLs
         fotos_inicio_urls = []
         for file in fotos_inicio:
             content = await file.read()
-            url = await upload_file_to_supabase(content, file.filename, file.content_type)
+            url = await upload_file_to_minio(content, file.filename, file.content_type)
             fotos_inicio_urls.append(url)
 
         fotos_fin_urls = []
         for file in fotos_fin:
             content = await file.read()
-            url = await upload_file_to_supabase(content, file.filename, file.content_type)
+            url = await upload_file_to_minio(content, file.filename, file.content_type)
             fotos_fin_urls.append(url)
 
         adjuntos = {
@@ -290,7 +290,7 @@ async def create_mantenimiento_report(
         }
         if firma_cliente:
             content = await firma_cliente.read()
-            url = await upload_file_to_supabase(content, firma_cliente.filename, firma_cliente.content_type)
+            url = await upload_file_to_minio(content, firma_cliente.filename, firma_cliente.content_type)
             adjuntos["firma_cliente"] = url
 
         request_data = {
