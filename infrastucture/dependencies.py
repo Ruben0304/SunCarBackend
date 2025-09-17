@@ -10,6 +10,7 @@ from application.services.update_service import UpdateService
 from application.services.contacto_service import ContactoService
 from application.services.chat_service import ChatService
 from application.services.oferta_service import OfertaService
+from application.services.leads_service import LeadsService
 from infrastucture.repositories.adjuntos_repository import AdjuntosRepository
 from infrastucture.external_services.gemini_provider import GeminiProvider
 from application.services.brigada_service import BrigadaService
@@ -21,6 +22,7 @@ from infrastucture.repositories.brigada_repository import BrigadaRepository
 from infrastucture.repositories.update_repository import UpdateRepository
 from infrastucture.repositories.contacto_repository import ContactoRepository
 from infrastucture.repositories.ofertas_repository import OfertasRepository
+from infrastucture.repositories.leads_repository import LeadsRepository
 
 # Global singleton instances for repositories
 product_repository = ProductRepository()
@@ -32,6 +34,7 @@ adjuntos_repository = AdjuntosRepository()
 update_repository = UpdateRepository()
 contacto_repository = ContactoRepository()
 ofertas_repository = OfertasRepository()
+leads_repository = LeadsRepository()
 
 # Global singleton instances for external services
 gemini_provider = GeminiProvider()
@@ -87,6 +90,12 @@ def get_contacto_repository() -> ContactoRepository:
 
 def get_ofertas_repository() -> OfertasRepository:
     return ofertas_repository
+
+def get_leads_repository() -> LeadsRepository:
+    """
+    Dependency for FastAPI that returns the singleton instance of LeadsRepository.
+    """
+    return leads_repository
 
 # Dependency functions for services
 def get_product_service(
@@ -180,4 +189,13 @@ def get_oferta_service(
         ofertas_repo: Annotated[OfertasRepository, Depends(get_ofertas_repository)]
 ) -> OfertaService:
     return OfertaService(ofertas_repo)
+
+
+def get_leads_service(
+        leads_repo: Annotated[LeadsRepository, Depends(get_leads_repository)]
+) -> LeadsService:
+    """
+    Dependency for FastAPI that returns an instance of LeadsService.
+    """
+    return LeadsService(leads_repo)
 

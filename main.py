@@ -21,6 +21,7 @@ from presentation.routers.cotizacion_router import router as cotizacion_router
 from presentation.routers.contactos_router import router as contactos_router
 from presentation.routers.chat_router import router as chat_router
 from presentation.routers.ofertas_router import router as ofertas_router
+from presentation.routers.leads_router import router as leads_router
 
 from dotenv import load_dotenv
 from presentation.handlers.validation_exception_handler import validation_exception_handler
@@ -168,6 +169,12 @@ app.include_router(
     ofertas_router,
     prefix="/api/ofertas",
     tags=["Ofertas"]
+)
+
+app.include_router(
+    leads_router,
+    prefix="/api/leads",
+    tags=["Leads"]
 )
 
 if __name__ == "__main__":
