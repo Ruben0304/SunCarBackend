@@ -1,6 +1,6 @@
 from typing import List, Optional
 
-from domain.entities.oferta import Oferta
+from domain.entities.oferta import Oferta, OfertaSimplificada
 from infrastucture.repositories.ofertas_repository import OfertasRepository
 
 
@@ -10,6 +10,18 @@ class OfertaService:
 
     async def get_all(self) -> List[Oferta]:
         return self.ofertas_repository.get_all()
+
+    async def get_all_simplified(self) -> List[OfertaSimplificada]:
+        ofertas = self.ofertas_repository.get_all()
+        return [
+            OfertaSimplificada(
+                id=oferta.id,
+                descripcion=oferta.descripcion,
+                precio=oferta.precio,
+                imagen=oferta.imagen
+            )
+            for oferta in ofertas
+        ]
 
     async def get_by_id(self, oferta_id: str) -> Optional[Oferta]:
         return self.ofertas_repository.get_by_id(oferta_id)

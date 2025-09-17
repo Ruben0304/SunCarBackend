@@ -11,7 +11,8 @@ from presentation.schemas.responses.ofertas_responses import (
     OfertaGetResponse,
     OfertaCreateResponse,
     OfertaUpdateResponse,
-    OfertaDeleteResponse
+    OfertaDeleteResponse,
+    OfertasSimplificadasListResponse
 )
 
 
@@ -21,8 +22,18 @@ router = APIRouter()
 class OfertaCreateRequest(BaseModel):
     descripcion: str
     precio: float
+    imagen: Optional[str] = None
     garantias: list[str] = []
     elementos: list[dict] = []
+
+
+@router.get("/simplified", response_model=OfertasSimplificadasListResponse)
+async def read_ofertas_simplificadas(oferta_service: OfertaService = Depends(get_oferta_service)):
+    try:
+        data = await oferta_service.get_all_simplified()
+        return OfertasSimplificadasListResponse(success=True, message="Ofertas simplificadas obtenidas", data=data)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.get("/", response_model=OfertasListResponse)

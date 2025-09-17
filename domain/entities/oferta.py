@@ -13,7 +13,15 @@ class Oferta(BaseModel):
     id: Optional[str] = Field(default=None, description="ID de la oferta")
     descripcion: str
     precio: float
+    imagen: Optional[str] = Field(default=None, description="URL de imagen de la oferta")
     garantias: List[str] = []
     elementos: List[OfertaElemento] = []
+
+
+class OfertaSimplificada(BaseModel):
+    id: Optional[str] = Field(default=None, description="ID de la oferta")
+    descripcion: str
+    precio: float
+    imagen: Optional[str] = Field(default=None, description="URL de imagen de la oferta")
 
 

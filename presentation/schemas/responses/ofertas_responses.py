@@ -1,6 +1,6 @@
 from typing import List, Optional
 from pydantic import BaseModel
-from domain.entities.oferta import Oferta
+from domain.entities.oferta import Oferta, OfertaSimplificada
 
 
 class OfertasListResponse(BaseModel):
@@ -29,5 +29,11 @@ class OfertaUpdateResponse(BaseModel):
 class OfertaDeleteResponse(BaseModel):
     success: bool
     message: str
+
+
+class OfertasSimplificadasListResponse(BaseModel):
+    success: bool
+    message: str
+    data: List[OfertaSimplificada]
 
 
