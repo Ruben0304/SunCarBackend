@@ -20,6 +20,7 @@ from presentation.routers.pdf_router import router as pdf_router
 from presentation.routers.cotizacion_router import router as cotizacion_router
 from presentation.routers.contactos_router import router as contactos_router
 from presentation.routers.chat_router import router as chat_router
+from presentation.routers.ofertas_router import router as ofertas_router
 
 from dotenv import load_dotenv
 from presentation.handlers.validation_exception_handler import validation_exception_handler
@@ -161,6 +162,12 @@ app.include_router(
     chat_router,
     prefix="/api/chat",
     tags=["Chat LLM"]
+)
+
+app.include_router(
+    ofertas_router,
+    prefix="/api/ofertas",
+    tags=["Ofertas"]
 )
 
 if __name__ == "__main__":

@@ -1,0 +1,11 @@
+# Test: Obtener todas las ofertas (API local)
+GET http://127.0.0.1:8000/api/ofertas
+Accept: application/json
+Authorization: suncar-token-2025
+
+# Test: Obtener todas las ofertas (API desplegada)
+# Reemplaza <API_BASE_URL> por el dominio de tu backend (NO uses el URI de MongoDB)
+# GET https://<API_BASE_URL>/api/ofertas
+# Accept: application/json
+# Authorization: suncar-token-2025
+

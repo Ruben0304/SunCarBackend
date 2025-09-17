@@ -9,6 +9,7 @@ from application.services.auth_service import AuthService
 from application.services.update_service import UpdateService
 from application.services.contacto_service import ContactoService
 from application.services.chat_service import ChatService
+from application.services.oferta_service import OfertaService
 from infrastucture.repositories.adjuntos_repository import AdjuntosRepository
 from infrastucture.external_services.gemini_provider import GeminiProvider
 from application.services.brigada_service import BrigadaService
@@ -19,6 +20,7 @@ from infrastucture.repositories.reportes_repository import FormRepository  # Not
 from infrastucture.repositories.brigada_repository import BrigadaRepository
 from infrastucture.repositories.update_repository import UpdateRepository
 from infrastucture.repositories.contacto_repository import ContactoRepository
+from infrastucture.repositories.ofertas_repository import OfertasRepository
 
 # Global singleton instances for repositories
 product_repository = ProductRepository()
@@ -29,6 +31,7 @@ client_repository = ClientRepository()
 adjuntos_repository = AdjuntosRepository()
 update_repository = UpdateRepository()
 contacto_repository = ContactoRepository()
+ofertas_repository = OfertasRepository()
 
 # Global singleton instances for external services
 gemini_provider = GeminiProvider()
@@ -81,6 +84,9 @@ def get_contacto_repository() -> ContactoRepository:
     Dependency for FastAPI that returns the singleton instance of ContactoRepository.
     """
     return contacto_repository
+
+def get_ofertas_repository() -> OfertasRepository:
+    return ofertas_repository
 
 # Dependency functions for services
 def get_product_service(
@@ -168,4 +174,10 @@ def get_chat_service(
     return ChatService(gemini_prov)
 
 
+
+
+def get_oferta_service(
+        ofertas_repo: Annotated[OfertasRepository, Depends(get_ofertas_repository)]
+) -> OfertaService:
+    return OfertaService(ofertas_repo)
 
