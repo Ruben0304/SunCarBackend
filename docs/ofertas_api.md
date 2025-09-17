@@ -2,20 +2,40 @@
 
 Base URL: `/api/ofertas`
 
-Autenticación: Header `Authorization: suncar-token-2025` (igual que el resto de endpoints protegidos del backend).
+Autenticación: Bearer Token por header `Authorization: Bearer <TOKEN>`.
+- El token debe coincidir con la variable de entorno `AUTH_TOKEN` configurada en el servidor.
 
-### Modelo
+### Modelos
 
-Oferta
+Oferta (completa)
 - `id`: string (solo respuesta)
 - `descripcion`: string
 - `precio`: number
+- `imagen`?: string | null (URL)
 - `garantias`: string[]
 - `elementos`: Array<{ `categoria`?: string, `foto`?: string, `descripcion`?: string, `cantidad`?: number }>
 
+OfertaSimplificada
+- `id`: string (solo respuesta)
+- `descripcion`: string
+- `precio`: number
+- `imagen`?: string | null (URL)
+
 ### Endpoints
 
-- GET `/` — Listar ofertas
+- GET `/simplified` — Listar ofertas simplificadas
+  - Respuesta 200:
+  ```json
+  {
+    "success": true,
+    "message": "Ofertas simplificadas obtenidas",
+    "data": [
+      { "id": "64f7b2...", "descripcion": "Instalación de paneles", "precio": 15000.0, "imagen": "https://.../imagen.jpg" }
+    ]
+  }
+  ```
+
+- GET `/` — Listar ofertas completas
   - Respuesta 200:
   ```json
   {
@@ -24,12 +44,12 @@ Oferta
     "data": [
       {
         "id": "68cac8637c536b55d0a7f12f",
-        "descripcion": "Oferta de electrónica básica",
-        "precio": 299.99,
-        "garantias": ["Garantía de fábrica 1 año", "Repuestos garantizados"],
+        "descripcion": "Instalación de paneles solares residencial",
+        "precio": 15000.0,
+        "imagen": "https://example.com/imagen-oferta-1.jpg",
+        "garantias": ["5 años en paneles", "2 años en instalación"],
         "elementos": [
-          {"categoria": "electrónica", "foto": "https://ejemplo.com/telefono.jpg", "descripcion": "Teléfono inteligente", "cantidad": 1},
-          {"categoria": "accesorios", "foto": "https://ejemplo.com/funda.jpg", "descripcion": "Funda protectora", "cantidad": 2}
+          {"categoria": "Panel Solar", "foto": "https://example.com/panel.jpg", "descripcion": "Panel 400W", "cantidad": 10}
         ]
       }
     ]
@@ -52,6 +72,7 @@ Oferta
   {
     "descripcion": "string",
     "precio": 0,
+    "imagen": "https://..." ,
     "garantias": ["string"],
     "elementos": [
       {"categoria": "string", "foto": "url", "descripcion": "string", "cantidad": 1}
@@ -88,14 +109,12 @@ Oferta
 
 Enviar en todas las llamadas:
 ```
-Authorization: suncar-token-2025
+Authorization: Bearer <TOKEN>
 Accept: application/json
 Content-Type: application/json (en POST/PUT)
 ```
 
 ### Notas
-- Campos opcionales en `elementos`: `categoria`, `foto`, `descripcion`, `cantidad` pueden omitirse según el caso de uso.
 - `precio` es number (float).
+- Los campos `imagen` y `foto` son opcionales y pueden ser `null`.
 - El `id` se devuelve como string.
-
-
