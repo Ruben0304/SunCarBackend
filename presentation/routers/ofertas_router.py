@@ -1,11 +1,13 @@
 from typing import Optional
+import json
 
-from fastapi import APIRouter, Depends, HTTPException, Body, Path
+from fastapi import APIRouter, Depends, HTTPException, Body, Path, UploadFile, File, Form
 from pydantic import BaseModel
 
 from application.services.oferta_service import OfertaService
 from domain.entities.oferta import Oferta
 from infrastucture.dependencies import get_oferta_service
+from infrastucture.external_services.minio_uploader import upload_file_to_minio
 from presentation.schemas.responses.ofertas_responses import (
     OfertasListResponse,
     OfertaGetResponse,
@@ -22,7 +24,7 @@ router = APIRouter()
 class OfertaCreateRequest(BaseModel):
     descripcion: str
     precio: float
-    imagen: Optional[str] = None
+    precio_cliente: Optional[float] = None
     garantias: list[str] = []
     elementos: list[dict] = []
 
@@ -57,9 +59,37 @@ async def read_oferta_by_id(oferta_id: str, oferta_service: OfertaService = Depe
 
 
 @router.post("/", response_model=OfertaCreateResponse)
-async def create_oferta(request: OfertaCreateRequest, oferta_service: OfertaService = Depends(get_oferta_service)):
+async def create_oferta(
+    descripcion: str = Form(...),
+    precio: float = Form(...),
+    precio_cliente: Optional[float] = Form(None),
+    garantias: str = Form(default="[]"),
+    elementos: str = Form(default="[]"),
+    imagen: Optional[UploadFile] = File(None),
+    oferta_service: OfertaService = Depends(get_oferta_service)
+):
     try:
-        oferta_id = await oferta_service.create(request.model_dump())
+        # Parse JSON fields
+        garantias_list = json.loads(garantias)
+        elementos_list = json.loads(elementos)
+
+        # Upload image to MinIO if provided
+        imagen_url = None
+        if imagen:
+            content = await imagen.read()
+            imagen_url = await upload_file_to_minio(content, imagen.filename, imagen.content_type, "ofertas")
+
+        # Create oferta data
+        oferta_data = {
+            "descripcion": descripcion,
+            "precio": precio,
+            "precio_cliente": precio_cliente,
+            "imagen": imagen_url,
+            "garantias": garantias_list,
+            "elementos": elementos_list
+        }
+
+        oferta_id = await oferta_service.create(oferta_data)
         return OfertaCreateResponse(success=True, message="Oferta creada", oferta_id=oferta_id)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -68,10 +98,35 @@ async def create_oferta(request: OfertaCreateRequest, oferta_service: OfertaServ
 @router.put("/{oferta_id}", response_model=OfertaUpdateResponse)
 async def update_oferta(
     oferta_id: str,
-    new_data: dict = Body(..., description="Campos a actualizar de la oferta"),
+    descripcion: Optional[str] = Form(None),
+    precio: Optional[float] = Form(None),
+    precio_cliente: Optional[float] = Form(None),
+    garantias: Optional[str] = Form(None),
+    elementos: Optional[str] = Form(None),
+    imagen: Optional[UploadFile] = File(None),
     oferta_service: OfertaService = Depends(get_oferta_service)
 ):
     try:
+        new_data = {}
+
+        # Only update fields that are provided
+        if descripcion is not None:
+            new_data["descripcion"] = descripcion
+        if precio is not None:
+            new_data["precio"] = precio
+        if precio_cliente is not None:
+            new_data["precio_cliente"] = precio_cliente
+        if garantias is not None:
+            new_data["garantias"] = json.loads(garantias)
+        if elementos is not None:
+            new_data["elementos"] = json.loads(elementos)
+
+        # Upload new image if provided
+        if imagen:
+            content = await imagen.read()
+            imagen_url = await upload_file_to_minio(content, imagen.filename, imagen.content_type, "ofertas")
+            new_data["imagen"] = imagen_url
+
         ok = await oferta_service.update(oferta_id, new_data)
         if not ok:
             return OfertaUpdateResponse(success=False, message="Oferta no encontrada o sin cambios")

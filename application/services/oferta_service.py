@@ -18,6 +18,7 @@ class OfertaService:
                 id=oferta.id,
                 descripcion=oferta.descripcion,
                 precio=oferta.precio,
+                precio_cliente=oferta.precio_cliente,
                 imagen=oferta.imagen
             )
             for oferta in ofertas

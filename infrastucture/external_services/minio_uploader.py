@@ -36,26 +36,26 @@ def get_minio_client() -> Minio:
         )
     return _minio_client
 
-async def upload_file_to_minio(file_content: bytes, original_filename: str, content_type: str) -> str:
-    BUCKET_NAME = os.getenv("MINIO_BUCKET", "photos")
+async def upload_file_to_minio(file_content: bytes, original_filename: str, content_type: str, bucket_name: str = None) -> str:
+    BUCKET_NAME = bucket_name or os.getenv("MINIO_BUCKET", "photos")
     minio_client = get_minio_client()
-    
+
     # Ensure bucket exists
     try:
         if not minio_client.bucket_exists(BUCKET_NAME):
             minio_client.make_bucket(BUCKET_NAME)
     except S3Error as e:
         raise Exception(f"Error creating/accessing bucket: {e}")
-    
+
     # Generate unique filename
     file_extension = original_filename.split(".")[-1] if "." in original_filename else "bin"
     unique_filename = f"{uuid.uuid4()}.{file_extension}"
-    
+
     try:
         # Upload file
         from io import BytesIO
         file_stream = BytesIO(file_content)
-        
+
         minio_client.put_object(
             bucket_name=BUCKET_NAME,
             object_name=unique_filename,
@@ -63,14 +63,14 @@ async def upload_file_to_minio(file_content: bytes, original_filename: str, cont
             length=len(file_content),
             content_type=content_type
         )
-        
+
         # Generate public URL
         MINIO_ENDPOINT = os.getenv("MINIO_ENDPOINT")
         MINIO_PUBLIC_ENDPOINT = os.getenv("MINIO_PUBLIC_ENDPOINT", MINIO_ENDPOINT)
-        
+
         # Use public endpoint if available, otherwise use private endpoint
         endpoint_for_url = MINIO_PUBLIC_ENDPOINT
-        
+
         # Parse endpoint to construct proper URL
         parsed_url = urlparse(endpoint_for_url)
         if parsed_url.scheme:
@@ -81,9 +81,9 @@ async def upload_file_to_minio(file_content: bytes, original_filename: str, cont
             MINIO_SECURE = os.getenv("MINIO_SECURE", "False").lower() == "true"
             protocol = "https" if MINIO_SECURE else "http"
             base_url = f"{protocol}://{endpoint_for_url}"
-        
+
         public_url = f"{base_url}/{BUCKET_NAME}/{unique_filename}"
         return public_url
-        
+
     except S3Error as e:
         raise Exception(f"Error uploading file to MinIO: {e}")
