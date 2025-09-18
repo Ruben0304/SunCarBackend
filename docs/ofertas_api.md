@@ -11,6 +11,7 @@ Oferta (completa)
 - `id`: string (solo respuesta)
 - `descripcion`: string
 - `precio`: number
+- `precio_cliente`?: number | null (opcional)
 - `imagen`?: string | null (URL)
 - `garantias`: string[]
 - `elementos`: Array<{ `categoria`?: string, `foto`?: string, `descripcion`?: string, `cantidad`?: number }>
@@ -19,6 +20,7 @@ OfertaSimplificada
 - `id`: string (solo respuesta)
 - `descripcion`: string
 - `precio`: number
+- `precio_cliente`?: number | null (opcional)
 - `imagen`?: string | null (URL)
 
 ### Endpoints
@@ -30,7 +32,7 @@ OfertaSimplificada
     "success": true,
     "message": "Ofertas simplificadas obtenidas",
     "data": [
-      { "id": "64f7b2...", "descripcion": "Instalación de paneles", "precio": 15000.0, "imagen": "https://.../imagen.jpg" }
+      { "id": "64f7b2...", "descripcion": "Instalación de paneles", "precio": 15000.0, "precio_cliente": 14500.0, "imagen": "https://.../imagen.jpg" }
     ]
   }
   ```
@@ -46,6 +48,7 @@ OfertaSimplificada
         "id": "68cac8637c536b55d0a7f12f",
         "descripcion": "Instalación de paneles solares residencial",
         "precio": 15000.0,
+        "precio_cliente": 14500.0,
         "imagen": "https://example.com/imagen-oferta-1.jpg",
         "garantias": ["5 años en paneles", "2 años en instalación"],
         "elementos": [
@@ -67,17 +70,24 @@ OfertaSimplificada
   ```
 
 - POST `/` — Crear oferta
-  - Body:
-  ```json
-  {
-    "descripcion": "string",
-    "precio": 0,
-    "imagen": "https://..." ,
-    "garantias": ["string"],
-    "elementos": [
-      {"categoria": "string", "foto": "url", "descripcion": "string", "cantidad": 1}
-    ]
-  }
+  - Content-Type: `multipart/form-data`
+  - Form data:
+    - `descripcion`: string (requerido)
+    - `precio`: number (requerido)
+    - `precio_cliente`: number (opcional)
+    - `imagen`: file (opcional - archivo de imagen)
+    - `garantias`: string (JSON array, por defecto "[]")
+    - `elementos`: string (JSON array, por defecto "[]")
+  - Ejemplo usando curl:
+  ```bash
+  curl -X POST "http://localhost:8000/api/ofertas/" \
+    -H "Authorization: Bearer <TOKEN>" \
+    -F "descripcion=Instalación de paneles" \
+    -F "precio=15000.0" \
+    -F "precio_cliente=14500.0" \
+    -F "imagen=@/path/to/image.jpg" \
+    -F "garantias=[\"5 años en paneles\", \"2 años en instalación\"]" \
+    -F "elementos=[{\"categoria\": \"Panel Solar\", \"descripcion\": \"Panel 400W\", \"cantidad\": 10}]"
   ```
   - Respuesta 200:
   ```json
@@ -85,7 +95,22 @@ OfertaSimplificada
   ```
 
 - PUT `/{oferta_id}` — Actualizar oferta (parcial o total)
-  - Body: objeto parcial con cualquier campo de `Oferta` excepto `id`.
+  - Content-Type: `multipart/form-data`
+  - Form data (todos opcionales):
+    - `descripcion`: string
+    - `precio`: number
+    - `precio_cliente`: number
+    - `imagen`: file (archivo de imagen)
+    - `garantias`: string (JSON array)
+    - `elementos`: string (JSON array)
+  - Ejemplo usando curl:
+  ```bash
+  curl -X PUT "http://localhost:8000/api/ofertas/68cac8637c536b55d0a7f12f" \
+    -H "Authorization: Bearer <TOKEN>" \
+    -F "descripcion=Nueva descripción" \
+    -F "precio_cliente=13500.0" \
+    -F "imagen=@/path/to/new-image.jpg"
+  ```
   - Respuesta 200:
   ```json
   {"success": true, "message": "Oferta actualizada"}
@@ -111,10 +136,13 @@ Enviar en todas las llamadas:
 ```
 Authorization: Bearer <TOKEN>
 Accept: application/json
-Content-Type: application/json (en POST/PUT)
+Content-Type: multipart/form-data (en POST/PUT con archivos)
 ```
 
 ### Notas
-- `precio` es number (float).
+- `precio` y `precio_cliente` son number (float).
 - Los campos `imagen` y `foto` son opcionales y pueden ser `null`.
 - El `id` se devuelve como string.
+- Las imágenes se almacenan en MinIO bucket "ofertas" y se devuelve la URL pública.
+- Los campos `garantias` y `elementos` se envían como strings JSON en form-data.
+- `precio_cliente` es opcional y puede usarse para precios específicos por cliente.
