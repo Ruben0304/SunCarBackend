@@ -38,4 +38,10 @@ class OfertaService:
     async def delete(self, oferta_id: str) -> bool:
         return self.ofertas_repository.delete(oferta_id)
 
+    async def add_elemento(self, oferta_id: str, elemento_data: dict) -> bool:
+        return self.ofertas_repository.add_elemento(oferta_id, elemento_data)
+
+    async def remove_elemento(self, oferta_id: str, elemento_index: int) -> bool:
+        return self.ofertas_repository.remove_elemento(oferta_id, elemento_index)
+
 

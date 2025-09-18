@@ -48,4 +48,34 @@ class OfertasRepository:
         result = collection.delete_one({"_id": ObjectId(oferta_id)})
         return result.deleted_count > 0
 
+    def add_elemento(self, oferta_id: str, elemento_data: dict) -> bool:
+        collection = get_collection(self.collection_name)
+        result = collection.update_one(
+            {"_id": ObjectId(oferta_id)},
+            {"$push": {"elementos": elemento_data}}
+        )
+        return result.modified_count > 0
+
+    def remove_elemento(self, oferta_id: str, elemento_index: int) -> bool:
+        collection = get_collection(self.collection_name)
+
+        # Primero obtener la oferta para verificar que el índice es válido
+        oferta = collection.find_one({"_id": ObjectId(oferta_id)})
+        if not oferta or "elementos" not in oferta:
+            return False
+
+        elementos = oferta.get("elementos", [])
+        if elemento_index < 0 or elemento_index >= len(elementos):
+            return False
+
+        # Remover el elemento por índice
+        elementos.pop(elemento_index)
+
+        # Actualizar la oferta con la nueva lista de elementos
+        result = collection.update_one(
+            {"_id": ObjectId(oferta_id)},
+            {"$set": {"elementos": elementos}}
+        )
+        return result.modified_count > 0
+
 

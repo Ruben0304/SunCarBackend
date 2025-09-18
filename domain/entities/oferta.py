@@ -3,10 +3,10 @@ from pydantic import BaseModel, Field
 
 
 class OfertaElemento(BaseModel):
-    categoria: Optional[str] = None
-    foto: Optional[str] = None
+    categoria: str
     descripcion: Optional[str] = None
-    cantidad: Optional[int] = None
+    cantidad: int = Field(..., gt=1, description="Cantidad debe ser mayor a 1")
+    foto: Optional[str] = Field(default=None, description="URL de la foto del elemento")
 
 
 class Oferta(BaseModel):

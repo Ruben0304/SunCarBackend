@@ -37,3 +37,13 @@ class OfertasSimplificadasListResponse(BaseModel):
     data: List[OfertaSimplificada]
 
 
+class ElementoAddResponse(BaseModel):
+    success: bool
+    message: str
+
+
+class ElementoDeleteResponse(BaseModel):
+    success: bool
+    message: str
+
+
