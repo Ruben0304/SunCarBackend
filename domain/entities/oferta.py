@@ -3,9 +3,9 @@ from pydantic import BaseModel, Field
 
 
 class OfertaElemento(BaseModel):
-    categoria: str
-    descripcion: Optional[str] = None
-    cantidad: int = Field(..., gt=1, description="Cantidad debe ser mayor a 1")
+    categoria: Optional[str] = None
+    descripcion: str
+    cantidad: int = Field(..., gt=0, description="Cantidad debe ser mayor a 1")
     foto: Optional[str] = Field(default=None, description="URL de la foto del elemento")
 
 
