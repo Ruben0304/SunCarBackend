@@ -11,6 +11,14 @@ class OfertasRepository:
 
     def _to_model(self, raw: dict) -> Oferta:
         raw["id"] = str(raw.pop("_id"))
+
+        # Ordenar elementos por categoría si existen
+        if "elementos" in raw and raw["elementos"]:
+            raw["elementos"] = sorted(
+                raw["elementos"],
+                key=lambda x: x.get("categoria", "") or ""
+            )
+
         return Oferta.model_validate(raw)
 
     def _to_document(self, oferta: Oferta | dict) -> dict:
