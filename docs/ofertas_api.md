@@ -10,7 +10,7 @@ Autenticación: Bearer Token por header `Authorization: Bearer <TOKEN>`.
 **OfertaElemento**
 - `categoria`: string (requerido)
 - `descripcion`?: string | null (opcional)
-- `cantidad`: number (requerido, mayor a 1)
+- `cantidad`: number (requerido, mayor a 0)
 - `foto`?: string | null (URL de la foto almacenada, solo en respuesta)
 
 **Oferta (completa)**
@@ -141,7 +141,7 @@ Autenticación: Bearer Token por header `Authorization: Bearer <TOKEN>`.
   - Content-Type: `multipart/form-data`
   - Form data:
     - `categoria`: string (requerido)
-    - `cantidad`: number (requerido, mayor a 1)
+    - `cantidad`: number (requerido, mayor a 0)
     - `descripcion`: string (opcional)
     - `foto`: file (opcional - archivo de imagen del elemento)
   - Ejemplo usando curl:
@@ -196,7 +196,7 @@ Content-Type: multipart/form-data (en POST/PUT con archivos)
 4. **Gestionar elementos**: Usar `DELETE /{oferta_id}/elementos/{index}` para eliminar elementos específicos
 
 #### Validaciones
-- `cantidad` en elementos debe ser mayor a 1
+- `cantidad` en elementos debe ser mayor a 0
 - `categoria` en elementos es campo requerido
 - Los archivos de imagen se almacenan en MinIO bucket "ofertas"
 - `precio` y `precio_cliente` son number (float)
@@ -207,7 +207,7 @@ Content-Type: multipart/form-data (en POST/PUT con archivos)
 Los elementos ahora son objetos estructurados con validaciones:
 - **categoria**: Campo obligatorio que define el tipo de elemento
 - **descripcion**: Campo opcional para detalles adicionales
-- **cantidad**: Campo obligatorio, debe ser entero mayor a 1
+- **cantidad**: Campo obligatorio, debe ser entero mayor a 0
 - **foto**: Campo opcional multipart file para imagen específica del elemento
   - En el input: archivo multipart (igual que imagen principal de oferta)
   - En la respuesta: URL string de la imagen almacenada en MinIO

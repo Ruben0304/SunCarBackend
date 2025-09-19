@@ -152,15 +152,15 @@ async def delete_oferta(
 async def add_elemento_to_oferta(
     oferta_id: str = Path(..., description="ID de la oferta"),
     categoria: str = Form(..., description="Categoría del elemento"),
-    cantidad: int = Form(..., description="Cantidad del elemento (mayor a 1)"),
+    cantidad: int = Form(..., description="Cantidad del elemento (mayor a 0)"),
     descripcion: Optional[str] = Form(None, description="Descripción del elemento"),
     foto: Optional[UploadFile] = File(None, description="Foto del elemento"),
     oferta_service: OfertaService = Depends(get_oferta_service)
 ):
     try:
         # Validar cantidad
-        if cantidad <= 1:
-            raise HTTPException(status_code=400, detail="La cantidad debe ser mayor a 1")
+        if cantidad <= 0:
+            raise HTTPException(status_code=400, detail="La cantidad debe ser mayor a 0")
 
         # Subir foto si existe
         foto_url = None
