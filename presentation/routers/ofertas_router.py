@@ -16,7 +16,8 @@ from presentation.schemas.responses.ofertas_responses import (
     OfertaDeleteResponse,
     OfertasSimplificadasListResponse,
     ElementoAddResponse,
-    ElementoDeleteResponse
+    ElementoDeleteResponse,
+    ElementoUpdateResponse
 )
 
 
@@ -180,6 +181,50 @@ async def add_elemento_to_oferta(
         if not ok:
             return ElementoAddResponse(success=False, message="Oferta no encontrada")
         return ElementoAddResponse(success=True, message="Elemento agregado a la oferta")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.put("/{oferta_id}/elementos/{elemento_index}", response_model=ElementoUpdateResponse)
+async def update_elemento_from_oferta(
+    oferta_id: str = Path(..., description="ID de la oferta"),
+    elemento_index: int = Path(..., description="Índice del elemento a actualizar"),
+    categoria: Optional[str] = Form(None, description="Nueva categoría del elemento"),
+    cantidad: Optional[float] = Form(None, description="Nueva cantidad del elemento (mayor a 0)"),
+    descripcion: Optional[str] = Form(None, description="Nueva descripción del elemento"),
+    foto: Optional[UploadFile] = File(None, description="Nueva foto del elemento"),
+    oferta_service: OfertaService = Depends(get_oferta_service)
+):
+    try:
+        # Validar que al menos un campo se está actualizando
+        if all(v is None for v in [categoria, cantidad, descripcion, foto]):
+            raise HTTPException(status_code=400, detail="Debe proporcionar al menos un campo para actualizar")
+
+        # Validar cantidad si se proporciona
+        if cantidad is not None and cantidad <= 0:
+            raise HTTPException(status_code=400, detail="La cantidad debe ser mayor a 0")
+
+        # Subir nueva foto si se proporciona
+        foto_url = None
+        if foto:
+            content = await foto.read()
+            foto_url = await upload_file_to_minio(content, foto.filename, foto.content_type, "ofertas")
+
+        # Crear datos de actualización solo con campos proporcionados
+        nuevos_datos = {}
+        if categoria is not None:
+            nuevos_datos["categoria"] = categoria
+        if cantidad is not None:
+            nuevos_datos["cantidad"] = cantidad
+        if descripcion is not None:
+            nuevos_datos["descripcion"] = descripcion
+        if foto_url is not None:
+            nuevos_datos["foto"] = foto_url
+
+        ok = await oferta_service.update_elemento(oferta_id, elemento_index, nuevos_datos)
+        if not ok:
+            return ElementoUpdateResponse(success=False, message="Oferta no encontrada o índice inválido")
+        return ElementoUpdateResponse(success=True, message="Elemento actualizado en la oferta")
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
