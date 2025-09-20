@@ -44,4 +44,7 @@ class OfertaService:
     async def remove_elemento(self, oferta_id: str, elemento_index: int) -> bool:
         return self.ofertas_repository.remove_elemento(oferta_id, elemento_index)
 
+    async def update_elemento(self, oferta_id: str, elemento_index: int, nuevos_datos: dict) -> bool:
+        return self.ofertas_repository.update_elemento(oferta_id, elemento_index, nuevos_datos)
+
 

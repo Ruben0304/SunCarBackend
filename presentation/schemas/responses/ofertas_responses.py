@@ -47,3 +47,8 @@ class ElementoDeleteResponse(BaseModel):
     message: str
 
 
+class ElementoUpdateResponse(BaseModel):
+    success: bool
+    message: str
+
+
