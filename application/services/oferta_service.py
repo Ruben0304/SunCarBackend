@@ -20,7 +20,8 @@ class OfertaService:
                 precio=oferta.precio,
                 precio_cliente=oferta.precio_cliente,
                 imagen=oferta.imagen,
-                moneda=oferta.moneda
+                moneda=oferta.moneda,
+                financiamiento=oferta.financiamiento
             )
             for oferta in ofertas
         ]
