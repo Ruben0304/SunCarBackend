@@ -15,6 +15,7 @@ class Oferta(BaseModel):
     precio: float
     precio_cliente: Optional[float] = Field(default=None, description="Precio específico para el cliente")
     imagen: Optional[str] = Field(default=None, description="URL de imagen de la oferta")
+    moneda: Optional[str] = Field(default=None, description="Moneda de la oferta")
     garantias: List[str] = []
     elementos: List[OfertaElemento] = []
 
@@ -25,5 +26,6 @@ class OfertaSimplificada(BaseModel):
     precio: float
     precio_cliente: Optional[float] = Field(default=None, description="Precio específico para el cliente")
     imagen: Optional[str] = Field(default=None, description="URL de imagen de la oferta")
+    moneda: Optional[str] = Field(default=None, description="Moneda de la oferta")
 
 
