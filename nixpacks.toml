@@ -10,5 +10,6 @@ aptPkgs = [
   "libxcb1-dev",        # XCB base
   "libx11-dev",         # X11 base
   "libxcb-render0-dev", # XCB render extension
-  "libxcb-shm0-dev"     # XCB shared memory extension
+  "libxcb-shm0-dev" ,    # XCB shared memory extension\
+    "libx11-xcb-dev"       # <- cabecera xcb.h que pide cairo-xcb.h
 ]
