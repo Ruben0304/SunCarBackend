@@ -7,7 +7,6 @@ python-dotenv
 python-multipart
 supabase
 xhtml2pdf
-pycairo==1.25.1
 jinja2
 fastapi-mail
 google-genai
