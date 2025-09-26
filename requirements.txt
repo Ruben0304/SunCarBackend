@@ -6,7 +6,6 @@ motor
 python-dotenv
 python-multipart
 supabase
-xhtml2pdf
 jinja2
 fastapi-mail
 google-genai

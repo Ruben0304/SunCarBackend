@@ -141,11 +141,11 @@ app.include_router(
     tags=["Compartidos"]
 )
 
-app.include_router(
-    pdf_router,
-    prefix="/api/pdf",
-    tags=["PDF"]
-)
+# app.include_router(
+#     pdf_router,
+#     prefix="/api/pdf",
+#     tags=["PDF"]
+# )
 
 app.include_router(
     cotizacion_router,
