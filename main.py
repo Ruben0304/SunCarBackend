@@ -16,7 +16,7 @@ from presentation.routers.reportes_router import router as reportes_router
 from presentation.routers.updates_router import router as updates_router
 from presentation.routers.admin_router import router as admin_router
 from presentation.routers.shared_router import router as shared_router
-from presentation.routers.pdf_router import router as pdf_router
+# from presentation.routers.pdf_router import router as pdf_router
 from presentation.routers.cotizacion_router import router as cotizacion_router
 from presentation.routers.contactos_router import router as contactos_router
 from presentation.routers.chat_router import router as chat_router
