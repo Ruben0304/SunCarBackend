@@ -7,7 +7,7 @@ python-dotenv
 python-multipart
 supabase
 xhtml2pdf==0.2.11   # versión estable sin rlpycairo
-reportlab>=3.6.12   # motor PDF necesario
+reportlab==4.2.5   # motor PDF necesario
 Pillow>=9.5.0       # para imágenes
 svglib!=1.6.0
 jinja2
