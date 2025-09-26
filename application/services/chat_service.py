@@ -83,10 +83,10 @@ class ChatService:
             for oferta in ofertas_contexto
         ])
 
-        system_prompt = """Eres un asistente especializado en recomendar ofertas.
+        system_prompt = """Eres un especialista en marketing y asistente especializado en recomendar ofertas.
 Tu tarea es ordenar TODAS las ofertas proporcionadas de mayor a menor recomendación basándote en la consulta del usuario.
 
-- El campo "texto" debe contener una explicación amigable del ordenamiento
+- El campo "texto" debe contener una explicación amigable y clarificadora para un usuario común. NO incluyas IDs de ofertas ni seas extenso. Explica por qué recomiendas la primera opción y por qué la segunda podría ser una buena alternativa si la primera no les interesa. Evita detalles técnicos que no interesen al usuario y enfócate en beneficios claros y comprensibles.
 - El campo "ids_ordenados" debe contener TODOS los IDs de las ofertas ordenados de mayor a menor recomendación"""
 
         user_prompt = f"""Consulta del usuario: {texto_usuario}
