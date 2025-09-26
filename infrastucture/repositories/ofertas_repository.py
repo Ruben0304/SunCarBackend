@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import List, Optional, Union
 from bson import ObjectId
 
 from domain.entities.oferta import Oferta
@@ -21,7 +21,7 @@ class OfertasRepository:
 
         return Oferta.model_validate(raw)
 
-    def _to_document(self, oferta: Oferta | dict) -> dict:
+    def _to_document(self, oferta: Union[Oferta, dict]) -> dict:
         data = oferta.model_dump() if hasattr(oferta, "model_dump") else dict(oferta)
         data.pop("id", None)
         return data
@@ -39,7 +39,7 @@ class OfertasRepository:
             return None
         return self._to_model(raw)
 
-    def create(self, oferta: Oferta | dict) -> str:
+    def create(self, oferta: Union[Oferta, dict]) -> str:
         collection = get_collection(self.collection_name)
         doc = self._to_document(oferta)
         result = collection.insert_one(doc)
@@ -159,5 +159,40 @@ class OfertasRepository:
             {"$set": {"elementos": elementos_actualizados}}
         )
         return result.modified_count > 0
+
+    def obtener_datos_minimos_ofertas(self) -> List[dict]:
+        """
+        Obtiene datos mínimos de todas las ofertas para recomendaciones IA.
+        Retorna: id, descripcion_detallada, precio
+        """
+        collection = get_collection(self.collection_name)
+        cursor = collection.find(
+            {},
+            {"_id": 1, "descripcion_detallada": 1, "precio": 1}
+        )
+        raws = cursor.to_list(length=None)
+
+        # Transformar _id a id string
+        return [
+            {
+                "id": str(raw["_id"]),
+                "descripcion_detallada": raw.get("descripcion_detallada", ""),
+                "precio": raw.get("precio", 0)
+            }
+            for raw in raws
+        ]
+
+    def obtener_ofertas_por_ids(self, ids_ofertas: List[str]) -> List[Oferta]:
+        """
+        Obtiene ofertas completas por lista de IDs manteniendo el orden.
+        """
+        collection = get_collection(self.collection_name)
+        object_ids = [ObjectId(id_str) for id_str in ids_ofertas]
+
+        cursor = collection.find({"_id": {"$in": object_ids}})
+        ofertas_dict = {str(raw["_id"]): self._to_model(raw) for raw in cursor}
+
+        # Mantener orden de la lista de IDs
+        return [ofertas_dict[id_str] for id_str in ids_ofertas if id_str in ofertas_dict]
 
 

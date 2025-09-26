@@ -5,8 +5,9 @@ from fastapi import APIRouter, Depends, HTTPException, Body, Path, UploadFile, F
 from pydantic import BaseModel
 
 from application.services.oferta_service import OfertaService
+from application.services.chat_service import ChatService
 from domain.entities.oferta import Oferta, OfertaElemento
-from infrastucture.dependencies import get_oferta_service
+from infrastucture.dependencies import get_oferta_service, get_chat_service
 from infrastucture.external_services.minio_uploader import upload_file_to_minio
 from presentation.schemas.responses.ofertas_responses import (
     OfertasListResponse,
@@ -32,6 +33,16 @@ class OfertaCreateRequest(BaseModel):
     precio_cliente: Optional[float] = None
     garantias: list[str] = []
     elementos: list[dict] = []
+
+
+class RecomendacionRequest(BaseModel):
+    texto: str
+
+
+class RecomendacionResponse(BaseModel):
+    success: bool
+    message: str
+    data: Optional[dict] = None
 
 
 @router.get("/simplified", response_model=OfertasSimplificadasListResponse)
@@ -242,5 +253,51 @@ async def delete_elemento_from_oferta(
         return ElementoDeleteResponse(success=True, message="Elemento eliminado de la oferta")
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/recomendador", response_model=RecomendacionResponse)
+async def recomendar_ofertas(
+    request: RecomendacionRequest = Body(...),
+    oferta_service: OfertaService = Depends(get_oferta_service),
+    chat_service: ChatService = Depends(get_chat_service)
+):
+    """
+    Sistema recomendador de ofertas basado en IA.
+    Recibe texto del usuario y retorna todas las ofertas ordenadas por recomendación.
+    """
+    try:
+        # 1. Obtener datos mínimos de todas las ofertas
+        datos_minimos = await oferta_service.obtener_datos_minimos()
+
+        if not datos_minimos:
+            return RecomendacionResponse(
+                success=False,
+                message="No hay ofertas disponibles para recomendar"
+            )
+
+        # 2. Llamar al chat service para obtener recomendaciones
+        resultado_ia = await chat_service.recomendar_ofertas(
+            texto_usuario=request.texto,
+            ofertas_contexto=datos_minimos
+        )
+
+        # 3. Obtener ofertas completas en formato simplificado usando los IDs ordenados
+        ids_ordenados = resultado_ia.ids_ordenados
+        ofertas_simplificadas = await oferta_service.obtener_ofertas_por_ids(ids_ordenados)
+
+        # 4. Preparar respuesta final
+        respuesta_final = {
+            "texto": resultado_ia.texto,
+            "ofertas": [oferta.model_dump() for oferta in ofertas_simplificadas]
+        }
+
+        return RecomendacionResponse(
+            success=True,
+            message="Recomendaciones generadas exitosamente",
+            data=respuesta_final
+        )
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error al generar recomendaciones: {str(e)}")
 
 

@@ -1,0 +1,26 @@
+### Test del sistema recomendador de ofertas
+
+POST http://127.0.0.1:8000/api/ofertas/recomendador
+Content-Type: application/json
+
+{
+  "texto": "Busco algo económico para el hogar"
+}
+
+### Test con consulta más específica
+
+POST http://127.0.0.1:8000/api/ofertas/recomendador
+Content-Type: application/json
+
+{
+  "texto": "Necesito productos de lujo para oficina"
+}
+
+### Test con consulta técnica
+
+POST http://127.0.0.1:8000/api/ofertas/recomendador
+Content-Type: application/json
+
+{
+  "texto": "Busco equipos de computación para empresa"
+}

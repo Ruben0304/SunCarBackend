@@ -1,8 +1,11 @@
 import asyncio
 import os
-from typing import Optional, AsyncGenerator
+from typing import Optional, AsyncGenerator, TypeVar, Type
+from pydantic import BaseModel
 from google import genai
 from google.genai import types
+
+T = TypeVar('T', bound=BaseModel)
 
 
 class GeminiProvider:
@@ -141,3 +144,38 @@ class GeminiProvider:
                 yield chunk
         finally:
             thread.join()
+
+    async def chat_with_schema(self, model: str, prompt: str, response_schema: Type[T],
+                              system_prompt: Optional[str] = None) -> T:
+        """
+        Genera contenido con validación automática usando Pydantic models
+
+        Args:
+            model: Modelo a usar
+            prompt: Prompt del usuario
+            response_schema: Clase Pydantic para validar la respuesta
+            system_prompt: Prompt del sistema (opcional)
+
+        Returns:
+            Instancia validada del modelo Pydantic
+        """
+        def sync_chat_with_schema():
+            config = types.GenerateContentConfig(
+                response_mime_type="application/json",
+                response_schema=response_schema
+            )
+
+            # Add system instruction if provided
+            if system_prompt:
+                config.system_instruction = system_prompt
+
+            response = self.client.models.generate_content(
+                model=model,
+                contents=prompt,
+                config=config
+            )
+
+            # Return the parsed Pydantic model instance
+            return response.parsed
+
+        return await asyncio.to_thread(sync_chat_with_schema)

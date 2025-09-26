@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import List, Optional, Union
 
 from domain.entities.oferta import Oferta, OfertaSimplificada
 from infrastucture.repositories.ofertas_repository import OfertasRepository
@@ -29,7 +29,7 @@ class OfertaService:
     async def get_by_id(self, oferta_id: str) -> Optional[Oferta]:
         return self.ofertas_repository.get_by_id(oferta_id)
 
-    async def create(self, oferta: Oferta | dict) -> str:
+    async def create(self, oferta: Union[Oferta, dict]) -> str:
         if not isinstance(oferta, Oferta):
             oferta = Oferta(**oferta)
         return self.ofertas_repository.create(oferta)
@@ -48,5 +48,30 @@ class OfertaService:
 
     async def update_elemento(self, oferta_id: str, elemento_index: int, nuevos_datos: dict) -> bool:
         return self.ofertas_repository.update_elemento(oferta_id, elemento_index, nuevos_datos)
+
+    async def obtener_datos_minimos(self) -> List[dict]:
+        """
+        Obtiene datos mínimos de todas las ofertas para recomendaciones IA.
+        Retorna: id, descripcion_detallada, precio
+        """
+        return self.ofertas_repository.obtener_datos_minimos_ofertas()
+
+    async def obtener_ofertas_por_ids(self, ids_ofertas: List[str]) -> List[OfertaSimplificada]:
+        """
+        Obtiene ofertas en formato simplificado por lista de IDs manteniendo el orden.
+        """
+        ofertas = self.ofertas_repository.obtener_ofertas_por_ids(ids_ofertas)
+        return [
+            OfertaSimplificada(
+                id=oferta.id,
+                descripcion=oferta.descripcion,
+                precio=oferta.precio,
+                precio_cliente=oferta.precio_cliente,
+                imagen=oferta.imagen,
+                moneda=oferta.moneda,
+                financiamiento=oferta.financiamiento
+            )
+            for oferta in ofertas
+        ]
 
 
