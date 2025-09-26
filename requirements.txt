@@ -6,10 +6,8 @@ motor
 python-dotenv
 python-multipart
 supabase
-xhtml2pdf==0.2.11   # versión estable sin rlpycairo
-reportlab==4.2.5   # motor PDF necesario
-Pillow>=9.5.0       # para imágenes
-svglib!=1.6.0
+xhtml2pdf
+pycairo==1.25.1
 jinja2
 fastapi-mail
 google-genai
