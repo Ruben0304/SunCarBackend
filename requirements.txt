@@ -6,7 +6,7 @@ motor
 python-dotenv
 python-multipart
 supabase
-xhtml2pdf
+xhtml2pdf==0.2.11   # versión estable sin rlpycairo
 jinja2
 fastapi-mail
 google-genai
