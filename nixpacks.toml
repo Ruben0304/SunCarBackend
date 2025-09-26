@@ -1,0 +1,10 @@
+[phases.setup]
+aptPkgs = [
+  "libcairo2-dev",
+  "pkg-config",
+  "python3-dev",
+  "libjpeg-dev",
+  "zlib1g-dev",
+  "libfreetype6-dev",
+  "libffi-dev"
+]
