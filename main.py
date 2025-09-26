@@ -29,7 +29,7 @@ from presentation.handlers.validation_exception_handler import validation_except
 app = FastAPI(
     title="SunCar Backend",
     description="API con arquitectura limpia de la empresa SunCar",
-    version="1.0.0"
+    version="2.0.0"
 )
 
 # Esquema de seguridad para Swagger UI
