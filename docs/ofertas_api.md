@@ -500,3 +500,4 @@ Los elementos son objetos estructurados con validaciones:
 - Bucket: "ofertas"
 - Las URLs retornadas son permanentes y accesibles públicamente
 - Formato típico: `https://s3.suncarsrl.com:443/ofertas/{uuid}.{ext}`
+- 
