@@ -78,7 +78,11 @@ async def read_oferta_by_id(oferta_id: str, oferta_service: OfertaService = Depe
 async def create_oferta(
     descripcion: str = Form(...),
     precio: float = Form(...),
+    descripcion_detallada: Optional[str] = Form(None),
     precio_cliente: Optional[float] = Form(None),
+    moneda: Optional[str] = Form(None),
+    financiamiento: Optional[bool] = Form(None),
+    descuentos: Optional[str] = Form(None),
     garantias: str = Form(default="[]"),
     imagen: Optional[UploadFile] = File(None),
     oferta_service: OfertaService = Depends(get_oferta_service)
@@ -103,6 +107,16 @@ async def create_oferta(
             "elementos": []
         }
 
+        # Add optional fields only if provided
+        if descripcion_detallada is not None:
+            oferta_data["descripcion_detallada"] = descripcion_detallada
+        if moneda is not None:
+            oferta_data["moneda"] = moneda
+        if financiamiento is not None:
+            oferta_data["financiamiento"] = financiamiento
+        if descuentos is not None:
+            oferta_data["descuentos"] = descuentos
+
         oferta_id = await oferta_service.create(oferta_data)
         return OfertaCreateResponse(success=True, message="Oferta creada", oferta_id=oferta_id)
     except Exception as e:
@@ -113,8 +127,12 @@ async def create_oferta(
 async def update_oferta(
     oferta_id: str,
     descripcion: Optional[str] = Form(None),
+    descripcion_detallada: Optional[str] = Form(None),
     precio: Optional[float] = Form(None),
     precio_cliente: Optional[float] = Form(None),
+    moneda: Optional[str] = Form(None),
+    financiamiento: Optional[bool] = Form(None),
+    descuentos: Optional[str] = Form(None),
     garantias: Optional[str] = Form(None),
     imagen: Optional[UploadFile] = File(None),
     oferta_service: OfertaService = Depends(get_oferta_service)
@@ -125,10 +143,18 @@ async def update_oferta(
         # Only update fields that are provided
         if descripcion is not None:
             new_data["descripcion"] = descripcion
+        if descripcion_detallada is not None:
+            new_data["descripcion_detallada"] = descripcion_detallada
         if precio is not None:
             new_data["precio"] = precio
         if precio_cliente is not None:
             new_data["precio_cliente"] = precio_cliente
+        if moneda is not None:
+            new_data["moneda"] = moneda
+        if financiamiento is not None:
+            new_data["financiamiento"] = financiamiento
+        if descuentos is not None:
+            new_data["descuentos"] = descuentos
         if garantias is not None:
             new_data["garantias"] = json.loads(garantias)
 

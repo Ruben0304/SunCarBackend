@@ -12,11 +12,13 @@ class OfertaElemento(BaseModel):
 class Oferta(BaseModel):
     id: Optional[str] = Field(default=None, description="ID de la oferta")
     descripcion: str
+    descripcion_detallada: Optional[str] = Field(default=None, description="Descripción detallada de la oferta")
     precio: float
     precio_cliente: Optional[float] = Field(default=None, description="Precio específico para el cliente")
     imagen: Optional[str] = Field(default=None, description="URL de imagen de la oferta")
     moneda: Optional[str] = Field(default=None, description="Moneda de la oferta")
     financiamiento: Optional[bool] = Field(default=False, description="Indica si la oferta tiene financiamiento disponible")
+    descuentos: Optional[str] = Field(default=None, description="Información sobre descuentos aplicables")
     garantias: List[str] = []
     elementos: List[OfertaElemento] = []
 
@@ -24,10 +26,12 @@ class Oferta(BaseModel):
 class OfertaSimplificada(BaseModel):
     id: Optional[str] = Field(default=None, description="ID de la oferta")
     descripcion: str
+    descripcion_detallada: Optional[str] = Field(default=None, description="Descripción detallada de la oferta")
     precio: float
     precio_cliente: Optional[float] = Field(default=None, description="Precio específico para el cliente")
     imagen: Optional[str] = Field(default=None, description="URL de imagen de la oferta")
     moneda: Optional[str] = Field(default=None, description="Moneda de la oferta")
     financiamiento: Optional[bool] = Field(default=False, description="Indica si la oferta tiene financiamiento disponible")
+    descuentos: Optional[str] = Field(default=None, description="Información sobre descuentos aplicables")
 
 
