@@ -17,11 +17,13 @@ class OfertaService:
             OfertaSimplificada(
                 id=oferta.id,
                 descripcion=oferta.descripcion,
+                descripcion_detallada=oferta.descripcion_detallada,
                 precio=oferta.precio,
                 precio_cliente=oferta.precio_cliente,
                 imagen=oferta.imagen,
                 moneda=oferta.moneda,
-                financiamiento=oferta.financiamiento
+                financiamiento=oferta.financiamiento,
+                descuentos=oferta.descuentos
             )
             for oferta in ofertas
         ]
@@ -65,11 +67,13 @@ class OfertaService:
             OfertaSimplificada(
                 id=oferta.id,
                 descripcion=oferta.descripcion,
+                descripcion_detallada=oferta.descripcion_detallada,
                 precio=oferta.precio,
                 precio_cliente=oferta.precio_cliente,
                 imagen=oferta.imagen,
                 moneda=oferta.moneda,
-                financiamiento=oferta.financiamiento
+                financiamiento=oferta.financiamiento,
+                descuentos=oferta.descuentos
             )
             for oferta in ofertas
         ]

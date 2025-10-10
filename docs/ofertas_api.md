@@ -42,7 +42,7 @@ Autenticación: Bearer Token por header `Authorization: Bearer <TOKEN>`.
 ### Gestión de Ofertas
 
 #### GET `/simplified` — Listar ofertas simplificadas
-Obtiene todas las ofertas en formato simplificado (sin elementos ni garantías).
+Obtiene todas las ofertas en formato simplificado (sin elementos ni garantías). Incluye todos los campos principales excepto garantías y elementos.
 
 **Respuesta 200:**
 ```json
@@ -53,17 +53,19 @@ Obtiene todas las ofertas en formato simplificado (sin elementos ni garantías).
     {
       "id": "64f7b2...",
       "descripcion": "SISTEMA FOTOVOLTAICO 3 kW con paneles de 590 W y 2 Baterías de 2.4 kW",
-      "descripcion_detallada": "SISTEMA FOTOVOLTAICO 3 kW con paneles de 590 W...",
+      "descripcion_detallada": "SISTEMA FOTOVOLTAICO 3 kW con paneles de 590 W y 2 Baterías de 2.4 kW (total 4.8 kWh de almacenamiento). Este sistema cuenta con 6 paneles solares monocristalinos de 590 W...",
       "precio": 5440.0,
       "precio_cliente": null,
       "imagen": "https://s3.suncarsrl.com:443/ofertas/3b0d3e87.png",
       "moneda": "usd",
       "financiamiento": true,
-      "descuentos": "Descuento del 10% por pago contado..."
+      "descuentos": "Descuento del 10% por pago contado. Financiamiento disponible desde España con intereses bajos."
     }
   ]
 }
 ```
+
+**Nota:** Este endpoint es ideal para listados, catálogos y el sistema recomendador, ya que incluye toda la información relevante sin la carga de elementos y garantías detalladas.
 
 ---
 
